@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DashboardStateContract",
+  "description": "Schema for composite Operator Cockpit state returned by API Gateway.",
+  "type": "object",
+  "required": [
+    "operator_id",
+    "timestamp",
+    "attention_mode",
+    "shift_twin_summary",
+    "immediate_safety_status"
+  ],
+  "properties": {
+    "operator_id": {
+      "type": "string",
+      "description": "Unique identifier of the machine operator."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of dashboard composition."
+    },
+    "attention_mode": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "SAFETY_FOCUS",
+        "PLANNING_FOCUS",
+        "EFFICIENCY_FOCUS",
+        "TRAINING_FOCUS",
+        "DECISION_FOCUS"
+      ],
+      "description": "Dynamic cockpit focus mode calculated by backend intelligence."
+    },
+    "shift_twin_summary": {
+      "type": "object",
+      "description": "High-level summary of the canonical Shift Twin.",
+      "additionalProperties": true
+    },
+    "immediate_safety_status": {
+      "type": "object",
+      "description": "Real-time safety and proximity compliance state.",
+      "additionalProperties": true
+    },
+    "active_decision_point": {
+      "type": ["object", "null"],
+      "description": "Current active decision point prompting operator action, if any.",
+      "additionalProperties": true
+    },
+    "trajectory_options": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Safe candidate trajectories available for operator selection."
+    },
+    "top_training_recommendation": {
+      "type": ["object", "null"],
+      "description": "Recommended personalized training module from the training hub.",
+      "additionalProperties": true
+    },
+    "active_alerts_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of unacknowledged safety or operational alerts."
+    }
+  },
+  "additionalProperties": false
+}

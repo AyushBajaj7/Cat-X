@@ -2,14 +2,13 @@
 
 ## 1. Overview & Core Philosophy
 
-To maximize velocity during the hackathon and eliminate merge collisions, code duplication, and architectural drift, the CAT Operator Shift Twin monorepo is divided strictly among three engineers.
+To maximize velocity during the Caterpillar Hackathon and eliminate merge collisions, code duplication, and architectural drift, the monorepo enforces a strict **ONE DOMAIN = ONE OWNER** boundary rule.
 
-Each engineer has total end-to-end ownership of their service boundaries, including:
-- Data modeling and database tables
-- Business logic algorithms
-- REST API implementation
-- Unit and integration tests
-- Dockerfile maintenance
+- **Engineer 1** produces safety, behaviour, and physical constraint signals.
+- **Engineer 2** consumes those signals and owns all operational intelligence, ML models, the canonical Shift Twin, and the CAT Trajectory Consequence Engine.
+- **Engineer 3** consumes backend intelligence to create the operator experience across the cab cockpit, training hub, API gateway, and demo simulation.
+
+The frontend **NEVER** calculates safety thresholds, anomaly scores, ETAs, fuel consumption, consequence graphs, or attention modes. The API Gateway **NEVER** acts as a secondary intelligence engine.
 
 ---
 
@@ -17,33 +16,32 @@ Each engineer has total end-to-end ownership of their service boundaries, includ
 
 | Dimension | Engineer 1 | Engineer 2 | Engineer 3 |
 | :--- | :--- | :--- | :--- |
-| **Name / Role** | Safety & Behavior Engineer | Operations Intelligence & ML Engineer | Integration, Training & UI Engineer |
-| **Codebases Owned** | `services/safety/` | `services/operations/`<br>`data/` | `services/training/`<br>`frontend/`<br>`integration/` |
-| **Git Feature Branch**| `feature/member1-safety` | `feature/member2-operations` | `feature/member3-training-ui` |
-| **Port Owned** | `8001` (Safety) | `8002` (Operations) | `5173` (Frontend)<br>`8000` (Gateway)<br>`8003` (Training) |
-| **Core Responsibilities** | - Seatbelt compliance engine<br>- Proximity hazard detection<br>- Real-time safety alerting<br>- Incident logging & audit<br>- Unusual behavior detection<br>- Excessive idling calculation<br>- Unsafe operation scoring<br>- Safety status REST API | - Daily task management<br>- Dataset preprocessing<br>- Synthetic dataset expansion<br>- ML ETA prediction model<br>- Model evaluation & metrics<br>- **Shift Twin Context Engine**<br>- Similar-shift retrieval<br>- What-if shift simulation<br>- Productivity analytics | - Training Hub modules<br>- Module recommendation consumer<br>- Training simulator & scoring<br>- React + Vite cab UI<br>- API Gateway routing & aggregation<br>- End-to-end integration tests<br>- Docker orchestration |
+| **Name / Role** | Safety & Behaviour Intelligence | Operations Intelligence, ML & Trajectory | Operator Experience, Gateway & Integration |
+| **Codebases Owned** | `member1-safety/` | `member2-operations/` | `member3-experience/`<br>- `training/`<br>- `frontend/`<br>- `gateway/`<br>`integration/` |
+| **Ports Owned** | `8001` (Safety) | `8002` (Operations) | `5173` (Frontend)<br>`8080` (Gateway)<br>`8003` (Training) |
+| **Core Responsibilities** | - Safety rule engine<br>- Seatbelt logic & compliance<br>- Proximity hazard detection<br>- Incident management & audit<br>- Behaviour anomaly detection<br>- Excessive idle detection<br>- Unsafe speed & swing signals<br>- **Safety constraint signals** consumed by Trajectory | - Task management & site zones<br>- Source dataset processing<br>- Synthetic data generation<br>- Probabilistic ETA model (P10/P90)<br>- Fuel/productivity proxy models<br>- Canonical Shift Twin state<br>- **Decision-point detector**<br>- **Candidate scenario generator**<br>- **Safety-constrained validation**<br>- **Consequence engine & DAG**<br>- What-if counterfactual engine<br>- Shift forecast & similar shifts<br>- **Decision memory & outcome eval**<br>- Next-best-action logic & trace | - Training backend & catalog<br>- Training scenarios & scoring<br>- Training history & certifications<br>- React Operator Cockpit<br>- Adaptive UI & attention modes<br>- Decision-point prompt UI<br>- Trajectory comparison UI<br>- Consequence graph visualization<br>- Human choice & outcome replay<br>- Decision memory exploration<br>- API Gateway fanout & aggregation<br>- Demo simulator ("17-Minute Trap")<br>- Docker Compose & E2E tests |
 
 ---
 
 ## 3. Strict Non-Responsibilities & No-Overlap Rule
 
-To maintain clean architectural boundaries:
-
 ### Engineer 1 (Safety):
-- **MUST NEVER** implement task scheduling, ETA prediction, or what-if simulation.
-- **MUST NEVER** implement training module workflows.
-- **MUST NEVER** access or alter tables in `operations_schema` or `training_schema`.
+- **MUST NEVER** model task scheduling, ETA, fuel consumption, or fleet queues (Owned by Engineer 2).
+- **MUST NEVER** generate candidate operational trajectories or consequence graphs (Owned by Engineer 2).
+- **MUST NEVER** implement training module workflows or UI components (Owned by Engineer 3).
+- **MUST NEVER** access or modify tables in `operations_schema` or `training_schema`.
 
-### Engineer 2 (Operations):
-- **MUST NEVER** implement safety hazard threshold evaluation or seatbelt rules.
-- **MUST NEVER** implement training attempt scoring.
-- **MUST NEVER** access or alter tables in `safety_schema` or `training_schema`.
+### Engineer 2 (Operations & Trajectory):
+- **MUST NEVER** invent safety thresholds or override safety violation records (Owned by Engineer 1).
+- **MUST NEVER** render UI components or visualize graphs in React (Owned by Engineer 3).
+- **MUST NEVER** implement training attempt scoring or module catalogs (Owned by Engineer 3).
+- **MUST NEVER** access or modify tables in `safety_schema` or `training_schema`.
 
-### Engineer 3 (Training & Frontend):
-- **MUST NEVER** duplicate safety, behavior, or ETA calculations inside the React frontend.
-- **MUST NEVER** implement raw safety rules inside the API Gateway.
-- The frontend is strictly a **consumer** of gateway and service APIs.
-- Any calculated field (e.g. ETA, risk score, recommended action) must originate from the authoritative backend service.
+### Engineer 3 (Experience, Gateway & Integration):
+- **MUST NEVER** calculate safety thresholds, proximity margins, or seatbelt compliance in the frontend or gateway.
+- **MUST NEVER** compute ETAs, fuel burn predictions, or scenario consequences in the frontend or gateway.
+- **MUST NEVER** determine the `attention_mode` in the frontend (it is strictly derived by Engineer 2's backend intelligence).
+- The frontend is strictly a **presentation consumer** of Gateway and service REST endpoints.
 
 ---
 
@@ -51,38 +49,47 @@ To maintain clean architectural boundaries:
 
 ```
 [ Engineer 1: Safety Service ]
-       | (Produces SafetyStatus & BehaviorAnalysis)
-       v
-[ Engineer 2: Operations Service ]
-       | (Ingests Safety & Telemetry to compute Shift Twin)
-       v
-[ Engineer 3: API Gateway & Frontend ]
-       | (Fetches Shift Twin, Dashboard, Training & Displays to Operator)
+       │
+       │ (SafetyStatus, BehaviourAnalysis & Constraint Signals)
+       ▼
+[ Engineer 2: Operations & Trajectory Service ]
+       │
+       │ (ShiftTwin, DecisionPoint, Scenarios, ConsequenceGraph, DecisionMemory)
+       ▼
+[ Engineer 3: API Gateway & Operator Cockpit ]
+       │
+       │ (Composed Dashboard, Cockpit Rendering, Adaptive Focus Modes)
+       ▼
+  Operator (Human-in-the-Loop Choice)
 ```
 
-### Handover Contract 1: Safety -> Operations
-- **Endpoint**: `GET /api/v1/safety/status/{operator_id}`
-- **Schema**: `shared/contracts/safety.schema.json`
-- **Data Provided**: Proximity alert count, seatbelt status, current behavior score, active hazard list.
-- **Usage**: Engineer 2 incorporates these metrics directly into the `ShiftTwin.safety` and `ShiftTwin.behaviour` state blocks.
+### Handover Contract 1: Safety -> Operations / Trajectory
+- **Endpoints**: `GET /api/v1/safety/status/{operator_id}`, `GET /api/v1/safety/behaviour/{operator_id}`
+- **Schemas**: `shared/contracts/safety.schema.json`, `shared/contracts/behaviour.schema.json`
+- **Data Provided**: Proximity hazard count, seatbelt status, fatigue score, excessive idling metrics, aggressive maneuver flags, and deterministic `constraint_flags`.
+- **Usage**: Engineer 2 uses these signals to validate candidate trajectories. If a trajectory breaches a safety constraint, its status is marked `REJECTED`.
 
 ### Handover Contract 2: Safety & Operations -> Training
-- **Endpoint**: `GET /api/v1/safety/behaviour/{operator_id}`
-- **Schema**: `shared/contracts/safety.schema.json`
-- **Usage**: Engineer 3 consumes behavior flags (e.g., `excessive_idling_flag`, `harsh_swing_detected`) to dynamically suggest personalized training modules via `GET /api/v1/training/recommendations/{operator_id}`.
+- **Endpoints**: `GET /api/v1/safety/behaviour/{operator_id}`, `GET /api/v1/operator/{operator_id}/shift-twin`
+- **Usage**: Engineer 3 consumes behavioral flags (e.g., `excessive_idling_flag`, `boom_shock_detected`) to dynamically serve personalized training recommendations via `GET /api/v1/training/recommendations/{operator_id}`.
 
-### Handover Contract 3: Operations -> Gateway / Frontend
-- **Endpoint**: `GET /api/v1/operator/{operator_id}/shift-twin`
-- **Schema**: `shared/contracts/shift-twin.schema.json`
-- **Usage**: Engineer 3 exposes this via the Gateway `GET /api/v1/dashboard/{operator_id}` and renders the living digital twin widget on the cab screen.
+### Handover Contract 3: Operations & Trajectory -> Gateway / Cockpit
+- **Endpoints**: 
+  - `GET /api/v1/operator/{operator_id}/shift-twin`
+  - `GET /api/v1/trajectory/current/{operator_id}`
+  - `POST /api/v1/trajectory/evaluate`
+  - `POST /api/v1/trajectory/choose`
+  - `GET /api/v1/trajectory/memory/{operator_id}`
+- **Schemas**: `shared/contracts/shift-twin.schema.json`, `shared/contracts/decision-point.schema.json`, `shared/contracts/scenario.schema.json`, `shared/contracts/consequence.schema.json`, `shared/contracts/decision-memory.schema.json`
+- **Usage**: Engineer 3 exposes these endpoints through the API Gateway on Port `8080` and visualizes them on the Operator Cockpit interface.
 
 ---
 
 ## 5. Conflict Resolution & Branching Rules
 
-1. **Shared Contracts are Frozen during Sprint Start**: Any modification to `shared/contracts/*.schema.json` requires explicit review and agreement among all three engineers before changes are made.
-2. **Independent Branches**:
+1. **Shared Contracts Freeze**: Any modification to `shared/contracts/*.schema.json` requires explicit review and agreement among all three engineers before changes are made.
+2. **Feature Branching**:
    - `git checkout feature/member1-safety` for Engineer 1.
    - `git checkout feature/member2-operations` for Engineer 2.
    - `git checkout feature/member3-training-ui` for Engineer 3.
-3. **No Direct Commits to Main**: All code is developed on feature branches and merged into `main` via Pull Requests with all CI checks passing.
+3. **Continuous Integration**: PRs must pass automated syntax, schema validation, import boundary checks, and pytest suites.

@@ -31,10 +31,10 @@ jobs:
     strategy:
       matrix:
         service:
-          - path: services/safety
-          - path: services/operations
-          - path: services/training
-          - path: integration/gateway
+          - path: member1-safety
+          - path: member2-operations
+          - path: member3-experience/training
+          - path: member3-experience/gateway
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -66,14 +66,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: frontend/package.json
+          cache-dependency-path: member3-experience/frontend/package.json
 
       - name: Install Node Dependencies
         run: |
-          cd frontend
+          cd member3-experience/frontend
           npm ci
 
       - name: Type Check & Build
         run: |
-          cd frontend
+          cd member3-experience/frontend
           npm run build

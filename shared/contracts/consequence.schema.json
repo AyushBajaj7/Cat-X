@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ConsequenceGraphContract",
+  "description": "Schema for causal consequence graphs explaining multi-order operational consequences.",
+  "type": "object",
+  "required": [
+    "graph_id",
+    "scenario_id",
+    "root_action",
+    "nodes",
+    "edges",
+    "summary"
+  ],
+  "properties": {
+    "graph_id": {
+      "type": "string",
+      "pattern": "^CG-[A-Z0-9-]+$",
+      "description": "Unique identifier of the consequence graph."
+    },
+    "scenario_id": {
+      "type": "string",
+      "description": "Associated candidate trajectory scenario ID."
+    },
+    "root_action": {
+      "type": "string",
+      "description": "Root operational choice triggering this causal consequence chain."
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ConsequenceNode"
+      },
+      "minItems": 1,
+      "description": "Causal chain nodes from primary action to final outcomes."
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ConsequenceEdge"
+      },
+      "description": "Directed causal relationships connecting consequence nodes."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Narrative explanation of the consequence chain."
+    }
+  },
+  "definitions": {
+    "ConsequenceNode": {
+      "type": "object",
+      "required": [
+        "node_id",
+        "type",
+        "title",
+        "value",
+        "unit",
+        "severity",
+        "explanation"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "description": "Unique identifier of the node in the consequence graph."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "DECISION",
+            "MACHINE_EFFECT",
+            "TASK_EFFECT",
+            "FUEL_EFFECT",
+            "IDLE_EFFECT",
+            "PRODUCTIVITY_EFFECT",
+            "SAFETY_EFFECT",
+            "SCHEDULE_EFFECT",
+            "OUTCOME"
+          ],
+          "description": "Semantic category of this causal effect."
+        },
+        "title": {
+          "type": "string",
+          "description": "Short label for visualization display."
+        },
+        "value": {
+          "type": ["number", "string", "boolean"],
+          "description": "Quantified value or state of the effect."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement (e.g., 'min', 'L', '%', 'deg', 'boolean')."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["BENEFICIAL", "NEUTRAL", "WARNING", "CRITICAL"],
+          "description": "Operational impact rating."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Physical or operational cause-and-effect explanation."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ConsequenceEdge": {
+      "type": "object",
+      "required": ["source", "target", "relationship", "explanation"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Origin node ID."
+        },
+        "target": {
+          "type": "string",
+          "description": "Destination node ID impacted by the cause."
+        },
+        "relationship": {
+          "type": "string",
+          "description": "Causal predicate (e.g., 'CAUSES', 'REDUCES', 'INCREASES', 'TRIGGERS')."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Explanation of the transition mechanics."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

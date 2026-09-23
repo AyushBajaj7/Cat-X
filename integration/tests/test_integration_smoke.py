@@ -13,10 +13,16 @@ def test_contracts_exist_and_are_valid_json():
     expected_schemas = [
         "telemetry.schema.json",
         "safety.schema.json",
+        "behaviour.schema.json",
         "task.schema.json",
         "prediction.schema.json",
         "shift-twin.schema.json",
+        "decision-point.schema.json",
+        "scenario.schema.json",
+        "consequence.schema.json",
+        "decision-memory.schema.json",
         "training.schema.json",
+        "dashboard.schema.json",
         "error.schema.json",
     ]
 

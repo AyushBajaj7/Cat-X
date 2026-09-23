@@ -1,4 +1,4 @@
-# Project Overview: CAT Operator Shift Twin
+# Project Overview: CAT Operator Shift Twin & CAT Trajectory
 
 ## 1. Executive Summary & Problem Statement
 
@@ -10,32 +10,9 @@ Conventional cab systems provide fragmented instrumentation: disconnected telema
 
 ---
 
-## 2. Product Concept: CAT Operator Shift Twin
+## 2. Mandatory Baseline Capabilities
 
-The **CAT Operator Shift Twin** is a dynamic digital companion that builds and updates a live, multidimensional representation of the operator's entire shift in real time.
-
-Rather than treating machine metrics, safety alarms, and task schedules as siloed pages, the Shift Twin continuously integrates:
-- **Machine State**: engine RPM, hydraulic pressure, fuel consumption, speed, fluid temperatures, error codes.
-- **Operator State**: seatbelt status, fatigue telemetry, responsiveness, shift tenure, operator experience tier.
-- **Current Task**: active assignment, target volumes, site polygon, materials, expected progress.
-- **Environmental Context**: weather conditions, terrain grade, visibility, ambient temperature, ground saturation.
-- **Safety State**: proximity hazard counts, seatbelt compliance streak, active zone restrictions.
-- **Behavior State**: idle percentage, aggressive braking/swinging incidents, cycle efficiency score.
-- **Productivity State**: cycle completion rate, material moved versus baseline, delay minutes.
-
-From this synchronized context, the system generates high-leverage outputs:
-1. **Current Shift Context**: Unified, high-fidelity real-time situational awareness.
-2. **Next-Best-Action (NBA) Recommendations**: Context-aware guidance (e.g., "Ground saturation high on northern ramp: switch haul route to Sector B to avoid slip delays").
-3. **Dynamic Task Forecasts**: Adaptive ETA predictions factoring in operator fatigue and weather degradation.
-4. **What-If Shift Simulations**: Rapid scenario analysis (e.g., "If idle time is reduced by 12%, shift completion advances by 38 minutes").
-5. **Similar-Shift Comparisons**: Benchmarking against historical shifts with matching machine, operator, and weather conditions.
-6. **Personalized Training Recommendations**: Triggered immediately by observed behavioral flags and safety infractions during the shift.
-
----
-
-## 3. Mandatory Requirements (Baseline)
-
-The hackathon defines five mandatory capabilities that serve as our operational foundation:
+The hackathon defines five mandatory capabilities that serve as our operational foundation and are strictly preserved:
 
 1. **Daily Task Dashboard**: Clear overview of scheduled, in-progress, and completed tasks with operational metadata.
 2. **Real-Time Safety Features**: Continuous seatbelt compliance tracking, proximity hazard alert triggers, and structured incident logging.
@@ -45,20 +22,54 @@ The hackathon defines five mandatory capabilities that serve as our operational 
 
 ---
 
-## 4. Product Differentiation: The Context / Shift Twin Layer
+## 3. Product-Level Differentiator: CAT Trajectory — Consequence Engine
 
 > **Critical Architecture Principle**:
-> *"The mandatory capabilities come from the challenge. The Shift Twin / context intelligence layer is our product-level differentiation, not merely connecting five separate pages."*
+> *"The mandatory capabilities come from the challenge. The CAT Trajectory Consequence Engine and canonical Shift Twin represent our true product-level innovation—not merely connecting five separate pages or running generic what-if simulations."*
 
-Generic hackathon submissions present 5 independent tabs connected by a navigation bar. The CAT Operator Shift Twin fundamentally differs:
-- Every safety alert updates the **Shift Twin context**, which recalibrates the **productivity forecast**.
-- Observed operational friction (excessive idling or bucket overfilling) directly updates the **behavior model**, which in turn queues a targeted **training recommendation** in the Training Hub.
-- The **What-If simulation engine** allows operators and dispatchers to explore operational trade-offs live during the shift.
+### The CAT Trajectory Closed Loop:
+Rather than offering passive retrospective charts or manual what-if sliders, CAT Trajectory acts as an active tactical partner:
+
+```
+OBSERVE
+  │  (Real-time Telemetry & Site Conditions)
+  ▼
+DETECT DECISION POINT
+  │  (Algorithmically identifies tactical inflection points: queues, delays, weather)
+  ▼
+GENERATE ALTERNATIVES
+  │  (Generates candidate paths: Continue | Re-sequence | Reposition)
+  ▼
+APPLY SAFETY CONSTRAINTS
+  │  (Deterministic validation: rejects options violating slope or proximity limits)
+  ▼
+PREDICT CONSEQUENCES
+  │  (Quantifies multi-order effects: ETA drift, fuel burn, safety risk)
+  ▼
+EXPLAIN CONSEQUENCE CHAIN
+  │  (Visualizes Directed Acyclic Graph: Decision ➔ Effect ➔ Outcome)
+  ▼
+OPERATOR CHOOSES
+  │  (Human-in-the-loop tactical decision without autonomous override)
+  ▼
+SIMULATE / REPLAY OUTCOME
+  │  (Executes trajectory against active Shift Twin state)
+  ▼
+RECORD DECISION
+  │  (Stores context signature, choice, and operator rationale in Decision Memory)
+  ▼
+COMPARE PREDICTED VS ACTUAL
+  │  (Audits real-world results post-shift to evaluate model drift)
+  ▼
+REUSE DECISION MEMORY
+     (Retrieves past successful choices when similar contexts recur)
+```
 
 ---
 
-## 5. Hackathon Success Metrics
+## 4. Architectural Boundaries & Safety Positioning
 
-- **Deterministic Stability**: 100% test pass rate, strict schema adherence, zero inter-service schema corruption.
-- **Demonstrability**: Live end-to-end flow from simulated telemetry event ingestion to real-time Shift Twin state update and UI render.
-- **Modularity**: Clean separation of concerns enabling 3 engineers to deliver high-velocity features in parallel without merge collisions.
+- **Advisory Prototype**: CAT Trajectory provides intelligent decision support. It does not issue autonomous machine control commands or override machine interlocks.
+- **Safety First**: Safety constraints reject unsafe trajectories; safety is never treated as a productivity trade-off.
+- **Modularity**: Strict ownership isolation across 3 engineers (`member1-safety`, `member2-operations`, `member3-experience`).
+- **No Leaky Intelligence**: The frontend strictly renders; the gateway strictly routes and aggregates. All calculations reside in authoritative backend domains.
