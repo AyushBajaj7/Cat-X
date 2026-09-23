@@ -8,7 +8,7 @@ services:
   # 1. Safety Service (:8001)
   - type: web
     name: cat-safety
-    env: docker
+    runtime: docker
     dockerfilePath: ./member1-safety/Dockerfile
     dockerContext: ./member1-safety
     plan: free
@@ -26,7 +26,7 @@ services:
   # 2. Operations Service (:8002)
   - type: web
     name: cat-operations
-    env: docker
+    runtime: docker
     dockerfilePath: ./member2-operations/Dockerfile
     dockerContext: ./member2-operations
     plan: free
@@ -44,7 +44,7 @@ services:
   # 3. Training Service (:8003)
   - type: web
     name: cat-training
-    env: docker
+    runtime: docker
     dockerfilePath: ./member3-experience/training/Dockerfile
     dockerContext: ./member3-experience/training
     plan: free
@@ -62,7 +62,7 @@ services:
   # 4. API Gateway (:8080)
   - type: web
     name: cat-gateway
-    env: docker
+    runtime: docker
     dockerfilePath: ./member3-experience/gateway/Dockerfile
     dockerContext: ./member3-experience/gateway
     plan: free
@@ -88,8 +88,8 @@ services:
           name: cat-training
           property: host
 
-  # 5. Frontend Dashboard UI
-  - type: static
+  # 5. Frontend Dashboard UI (Static Site on Render)
+  - type: web
     name: cat-frontend
     runtime: static
     buildCommand: cd member3-experience/frontend && npm install && npm run build
