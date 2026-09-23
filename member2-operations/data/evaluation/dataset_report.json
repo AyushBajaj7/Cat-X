@@ -1,6 +1,6 @@
 {
   "pipeline_status": "READY",
-  "row_count": 20,
+  "row_count": 300,
   "initial_raw_count": 20,
   "columns": [
     "task_id",
@@ -179,21 +179,27 @@
   },
   "target_distributions": {
     "task_duration_minutes": {
-      "mean": 229.65,
-      "std": 35.03,
-      "p10": 189.0,
-      "p50": 226.5,
-      "p90": 285.5
+      "mean": 42.65,
+      "std": 53.13,
+      "p10": 12.99,
+      "p50": 26.6,
+      "p90": 65.12
     },
     "fuel_litres": {
-      "mean": 182.82,
-      "p50": 178.5
+      "mean": 24.22,
+      "p50": 12.4
+    },
+    "idle_minutes": {
+      "mean": 11.92,
+      "p50": 6.0
     }
   },
   "split_sizes": {
-    "train": 0,
-    "val": 0,
-    "test": 0,
-    "edge_cases": 0
+    "train": 210,
+    "val": 45,
+    "test": 45,
+    "edge_cases": 5,
+    "source_records": 20,
+    "synthetic_records": 280
   }
 }
