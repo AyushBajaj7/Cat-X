@@ -1,0 +1,199 @@
+{
+  "pipeline_status": "READY",
+  "row_count": 20,
+  "initial_raw_count": 20,
+  "columns": [
+    "task_id",
+    "task_type",
+    "machine_model",
+    "machine_age_years",
+    "operator_id",
+    "operator_skill",
+    "site_zone",
+    "target_volume_tons",
+    "weather",
+    "ambient_temp_c",
+    "ground_saturation_pct",
+    "visibility_level",
+    "slope_deg",
+    "truck_arrival_interval_min",
+    "queue_length",
+    "cycle_time_sec",
+    "payload_tons",
+    "engine_load_pct",
+    "idle_minutes",
+    "task_duration_minutes",
+    "fuel_litres",
+    "shift_status",
+    "data_origin"
+  ],
+  "missing_values": {
+    "task_id": 0,
+    "task_type": 0,
+    "machine_model": 0,
+    "machine_age_years": 0,
+    "operator_id": 0,
+    "operator_skill": 0,
+    "site_zone": 0,
+    "target_volume_tons": 0,
+    "weather": 0,
+    "ambient_temp_c": 0,
+    "ground_saturation_pct": 0,
+    "visibility_level": 0,
+    "slope_deg": 0,
+    "truck_arrival_interval_min": 0,
+    "queue_length": 0,
+    "cycle_time_sec": 0,
+    "payload_tons": 0,
+    "engine_load_pct": 0,
+    "idle_minutes": 0,
+    "task_duration_minutes": 0,
+    "fuel_litres": 0,
+    "shift_status": 0,
+    "data_origin": 0
+  },
+  "duplicates": 0,
+  "invalid_ranges": {},
+  "categorical_distributions": {
+    "task_type": {
+      "EXCAVATION": 4,
+      "TRENCHING": 4,
+      "LOADING": 4,
+      "GRADING": 4,
+      "OVERBURDEN": 4
+    },
+    "operator_skill": {
+      "INTERMEDIATE": 9,
+      "EXPERT": 4,
+      "NOVICE": 4,
+      "MASTER": 3
+    },
+    "weather": {
+      "CLEAR": 11,
+      "RAIN": 4,
+      "OVERCAST": 4,
+      "MUD": 1
+    },
+    "visibility_level": {
+      "GOOD": 11,
+      "MODERATE": 4,
+      "EXCELLENT": 4,
+      "POOR": 1
+    },
+    "data_origin": {
+      "SOURCE": 20
+    }
+  },
+  "numeric_ranges": {
+    "machine_age_years": {
+      "min": 2.0,
+      "max": 7.0,
+      "mean": 3.85,
+      "median": 3.5,
+      "std": 1.33
+    },
+    "target_volume_tons": {
+      "min": 350.0,
+      "max": 1400.0,
+      "mean": 758.5,
+      "median": 725.0,
+      "std": 298.95
+    },
+    "ambient_temp_c": {
+      "min": 17.0,
+      "max": 27.0,
+      "mean": 22.05,
+      "median": 22.5,
+      "std": 3.15
+    },
+    "ground_saturation_pct": {
+      "min": 7.0,
+      "max": 34.0,
+      "mean": 15.75,
+      "median": 12.5,
+      "std": 8.25
+    },
+    "slope_deg": {
+      "min": 1.0,
+      "max": 9.0,
+      "mean": 4.61,
+      "median": 4.25,
+      "std": 2.48
+    },
+    "truck_arrival_interval_min": {
+      "min": 3.8,
+      "max": 16.0,
+      "mean": 7.72,
+      "median": 7.0,
+      "std": 3.43
+    },
+    "queue_length": {
+      "min": 0.0,
+      "max": 4.0,
+      "mean": 1.6,
+      "median": 2.0,
+      "std": 1.05
+    },
+    "cycle_time_sec": {
+      "min": 21.5,
+      "max": 38.0,
+      "mean": 28.42,
+      "median": 28.5,
+      "std": 4.55
+    },
+    "payload_tons": {
+      "min": 17.5,
+      "max": 28.0,
+      "mean": 23.4,
+      "median": 24.25,
+      "std": 3.16
+    },
+    "engine_load_pct": {
+      "min": 62.0,
+      "max": 84.0,
+      "mean": 72.1,
+      "median": 71.0,
+      "std": 6.25
+    },
+    "idle_minutes": {
+      "min": 9.0,
+      "max": 48.0,
+      "mean": 23.1,
+      "median": 22.0,
+      "std": 10.9
+    },
+    "task_duration_minutes": {
+      "min": 172.0,
+      "max": 295.0,
+      "mean": 229.65,
+      "median": 226.5,
+      "std": 35.03
+    },
+    "fuel_litres": {
+      "min": 122.0,
+      "max": 255.0,
+      "mean": 182.82,
+      "median": 178.5,
+      "std": 35.0
+    }
+  },
+  "target_distributions": {
+    "task_duration_minutes": {
+      "mean": 229.65,
+      "std": 35.03,
+      "p10": 189.0,
+      "p50": 226.5,
+      "p90": 285.5
+    },
+    "fuel_litres": {
+      "mean": 182.82,
+      "p50": 178.5
+    }
+  },
+  "split_sizes": {
+    "train": 0,
+    "val": 0,
+    "test": 0,
+    "edge_cases": 0
+  }
+}
