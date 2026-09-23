@@ -214,3 +214,7 @@ export async function setDemoStep(step?: number): Promise<DemoState> {
     body: JSON.stringify(step !== undefined ? { step } : {}),
   });
 }
+
+export const apiClient = {
+  getSafetyIncidents: fetchSafetyIncidents,
+};

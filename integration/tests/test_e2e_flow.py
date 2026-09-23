@@ -75,8 +75,9 @@ def test_ac02_telemetry_fanout():
     assert res.status_code == 202
     data = res.json()
     assert data["status"] == "ACCEPTED"
-    assert data["event_id"] == "EVT-E2E-002"
-    assert "fanout" in data or "downstream_ack" in data
+    ack = data.get("downstream_ack", {})
+    assert ack.get("event_id") == "EVT-E2E-002" or data.get("event_id") == "EVT-E2E-002"
+    assert "fanout" in ack or "downstream_ack" in data
 
 
 # -----------------------------------------------------------------------------
@@ -305,11 +306,16 @@ def test_ac14_similar_context_reuse():
 
     res = client.get("/api/v1/trajectory/similar/OP1001")
     assert res.status_code == 200
-    similar_list = res.json()
+    response = res.json()
+    # Support both bare list (old format) and wrapped object (new format)
+    if isinstance(response, list):
+        similar_list = response
+    else:
+        similar_list = response.get("similar_contexts", [])
     assert isinstance(similar_list, list)
     assert len(similar_list) >= 1
     match = similar_list[0]
-    assert match["similarity_score_pct"] >= 80.0
+    assert match.get("similarity_score_pct", 0) >= 80.0
     assert "previous_context" in match or "context_signature" in match
     assert "previous_action" in match or "chosen_action" in match
     assert "actual_result" in match or "actual_time_saved_minutes" in match

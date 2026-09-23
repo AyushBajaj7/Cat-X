@@ -54,6 +54,11 @@ async def get_operator_dashboard(operator_id: str):
         "active_alerts_count": safety.get("active_hazard_count", 0),
         "attention_mode": twin.get("attention_mode", demo_info.get("attention_mode", "NORMAL")),
         "attention_reason": twin.get("attention_reason", demo_info.get("attention_reason", "Nominal operating parameters.")),
+        "active_decision_point": demo_info.get("decision_point"),
+        "trajectory_card": {
+            "scenarios_count": len(demo_info.get("scenarios", [])),
+            "chosen_scenario": demo_engine.chosen_scenario,
+        } if demo_info.get("decision_point") else None,
         "demo_step": demo_engine.current_step,
         "demo_step_name": demo_info.get("step_name"),
     }
@@ -210,7 +215,7 @@ async def get_safety_alerts(operator_id: str, severity: Optional[str] = Query(de
             "operator_id": operator_id,
             "timestamp": demo_info["timestamp"],
             "severity": "CRITICAL",
-            "message": "Support vehicle inside 12m swing radius exclusion zone.",
+            "message": "Support vehicle inside 14m swing radius exclusion zone.",
             "acknowledged": False,
         })
     return alerts
@@ -313,9 +318,12 @@ async def get_current_trajectory_state(operator_id: str):
             pass
 
     demo_info = demo_engine.get_current_state()
+    dp = demo_info.get("decision_point")
     return {
         "operator_id": operator_id,
-        "active_decision_point": demo_info.get("decision_point"),
+        "decision_point_detected": dp is not None,
+        "evidence": dp.get("evidence", {}) if dp else {},
+        "active_decision_point": dp,
         "available_trajectories": ["SCEN-01-CONTINUE", "SCEN-02-RESEQUENCE", "SCEN-03-REPOSITION"],
         "scenarios": demo_info.get("scenarios", []),
         "attention_mode": demo_info.get("attention_mode", "DECISION_FOCUS"),
@@ -386,15 +394,51 @@ async def record_trajectory_outcome(payload: Dict[str, Any]):
         try:
             resp = await client.post(f"{settings.operations_service_url}/api/v1/trajectory/outcome", json=payload)
             if resp.status_code == 200:
-                return resp.json()
+                data = resp.json()
+                # Ensure required fields are always present
+                if "simulated_actual_outcome" not in data or "error_audit" not in data:
+                    demo_replay = demo_engine.get_current_state().get("outcome_replay") or _default_outcome_replay()
+                    data.setdefault("status", demo_replay["status"])
+                    data.setdefault("simulated_actual_outcome", demo_replay.get("simulated_actual_outcome"))
+                    data.setdefault("error_audit", demo_replay.get("error_audit"))
+                return data
         except Exception:
             pass
     demo_info = demo_engine.get_current_state()
-    return demo_info.get("outcome_replay") or {
-        "status": "EVALUATED",
-        "prediction_error": {"eta_delta_minutes": 1.5, "fuel_delta_liters": -0.8},
+    return demo_info.get("outcome_replay") or _default_outcome_replay()
+
+
+def _default_outcome_replay() -> Dict[str, Any]:
+    """Fallback outcome replay data guaranteeing all required fields are present."""
+    return {
+        "status": "SIMULATED_COMPLETE",
+        "decision_id": f"DEC-{demo_engine.operator_id}-001",
+        "chosen_scenario": demo_engine.chosen_scenario or "SCEN-02-RESEQUENCE",
+        "predicted_outcome": {
+            "eta_minutes": 145.0,
+            "fuel_liters": 168.0,
+            "idle_minutes": 0.0,
+            "shift_delay_minutes": -17.0,
+        },
+        "simulated_actual_outcome": {
+            "eta_minutes": 146.5,
+            "fuel_liters": 167.2,
+            "idle_minutes": 1.2,
+            "shift_delay_minutes": -15.8,
+        },
+        "prediction_error": {
+            "eta_delta_minutes": 1.5,
+            "fuel_delta_liters": -0.8,
+            "accuracy_pct": 98.9,
+        },
+        "error_audit": {
+            "duration_error_minutes": 1.5,
+            "fuel_delta_liters": -0.8,
+            "accuracy_pct": 98.9,
+        },
         "drift_status": "WITHIN_TOLERANCE",
         "is_simulated": True,
+        "simulation_label": "SIMULATED OUTCOME — PROJECTION AUDITED",
     }
 
 
@@ -416,8 +460,10 @@ async def get_decision_memory(operator_id: str):
             "task_id": "T002",
             "timestamp": demo_engine.decision_committed_at or "2026-09-23T10:48:00Z",
             "context_signature": "SIG-BENCH2-WET-TRENCH",
+            "context_id": "SIG-BENCH2-WET-TRENCH",
             "available_scenarios": ["SCEN-01-CONTINUE", "SCEN-02-RESEQUENCE", "SCEN-03-REPOSITION"],
             "chosen_scenario": demo_engine.chosen_scenario or "SCEN-02-RESEQUENCE",
+            "chosen_scenario_id": demo_engine.chosen_scenario or "SCEN-02-RESEQUENCE",
             "predicted_outcome": {
                 "eta_minutes": 145.0,
                 "fuel_liters": 168.0,
@@ -428,6 +474,7 @@ async def get_decision_memory(operator_id: str):
                 "fuel_liters": 167.2,
                 "shift_delay_minutes": -15.8,
             },
+            "actual_result": "15.8 min saved, 15.6L fuel saved, zero deadline delay",
             "prediction_error": {
                 "eta_delta_minutes": 1.5,
                 "fuel_delta_liters": -0.8,
@@ -449,19 +496,12 @@ async def get_similar_trajectories(operator_id: str):
                 return resp.json()
         except Exception:
             pass
-    return [
-        {
-            "historical_decision_id": "DEC-HIST-4402",
-            "similarity_score_pct": 94.2,
-            "context_signature": "SIG-BENCH2-WET-TRENCH",
-            "chosen_action": "RESEQUENCE",
-            "actual_time_saved_minutes": 15.8,
-            "actual_fuel_saved_liters": 15.6,
-            "key_learning": "Pre-stripping Bench 3 overburden eliminated 18-minute idle queue during rain onset.",
-            "operator_name": "J. Miller (OP1001)",
-            "date": "2026-09-23",
-        }
-    ]
+    demo_info = demo_engine.get_current_state()
+    sim_data = demo_info.get("similar_context") or demo_engine._get_similar_context_data()
+    return {
+        "operator_id": operator_id,
+        "similar_contexts": [sim_data] if sim_data else [],
+    }
 
 
 # ============================================================

@@ -1,6 +1,7 @@
-import React from 'react';
-import { Shield, AlertTriangle, AlertCircle, CheckCircle2, ShieldAlert, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, AlertTriangle, AlertCircle, CheckCircle2, ShieldAlert, Activity, FileText } from 'lucide-react';
 import { SafetyAlert, SafetyStatus } from '../../types';
+import { apiClient } from '../../api/client';
 
 interface SafetyScreenProps {
   safety: SafetyStatus | null;
@@ -10,6 +11,18 @@ interface SafetyScreenProps {
 }
 
 export const SafetyScreen: React.FC<SafetyScreenProps> = ({ safety, alerts, behaviour, loading }) => {
+  const [incidents, setIncidents] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const data = await apiClient.getSafetyIncidents(safety?.operator_id || 'OP1001');
+        if (Array.isArray(data)) setIncidents(data);
+      } catch {}
+    };
+    fetchIncidents();
+  }, [safety?.operator_id]);
+
   // Determine compliance state from backend values (do not calculate local thresholds)
   const isUnsafe = safety?.seatbelt_fastened === false || (safety?.active_hazard_count || 0) > 0;
   const isWarning = (safety?.overall_safety_score || 100) < 85 && !isUnsafe;
@@ -165,6 +178,52 @@ export const SafetyScreen: React.FC<SafetyScreenProps> = ({ safety, alerts, beha
                 </span>
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      {/* Incident History Log */}
+      <section className="space-y-3">
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+          <FileText className="w-4 h-4 text-gray-400" />
+          <span>Incident History Log ({incidents.length})</span>
+        </h3>
+        {incidents.length === 0 ? (
+          <div className="bg-[#141414] border border-[#252525] rounded-xl p-6 text-center text-xs text-gray-400">
+            No recorded incidents for this shift. Clean operational record.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="border-b border-[#2A2A2A] text-gray-400 uppercase">
+                  <th className="py-2 pr-3">Incident ID</th>
+                  <th className="py-2 pr-3">Type</th>
+                  <th className="py-2 pr-3">Severity</th>
+                  <th className="py-2 pr-3">Timestamp</th>
+                  <th className="py-2">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {incidents.map((inc: any, idx: number) => (
+                  <tr key={inc.incident_id || idx} className="border-b border-[#1E1E1E]">
+                    <td className="py-2 pr-3 font-mono text-gray-300">{inc.incident_id || `INC-${idx+1}`}</td>
+                    <td className="py-2 pr-3 text-white font-medium">{inc.type || 'OPERATIONAL'}</td>
+                    <td className="py-2 pr-3">
+                      <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[10px] ${
+                        inc.severity === 'CRITICAL' ? 'bg-rose-950 text-rose-300'
+                        : inc.severity === 'HIGH' ? 'bg-amber-950 text-amber-300'
+                        : 'bg-gray-800 text-gray-300'
+                      }`}>
+                        {inc.severity || 'LOW'}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-3 font-mono text-gray-400">{inc.timestamp || '—'}</td>
+                    <td className="py-2 text-gray-300">{inc.description || inc.message || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </section>

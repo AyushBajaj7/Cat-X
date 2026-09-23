@@ -105,8 +105,7 @@ class TrainingService:
                 steps=[
                     "Identify the hazard.",
                     "Assess the changing situation.",
-                    "Choose an appropriate response.",
-                    "Confirm the safe operating path."
+                    "Choose an appropriate response and confirm safe resume."
                 ],
                 scenario_steps=[
                     ScenarioStep(
@@ -130,19 +129,10 @@ class TrainingService:
                     ScenarioStep(
                         step_number=3,
                         title="Choose Appropriate Response",
-                        prompt="What is the required immediate operational response?",
+                        prompt="What is the required immediate operational response, and when is it safe to resume?",
                         choices=[
-                            ScenarioChoice(choice_id="C1", text="Halt swing immediately, lower bucket to ground, sound horn, and establish radio contact.", is_correct=True, explanation="Immediate safe stop neutralizes kinetic energy."),
+                            ScenarioChoice(choice_id="C1", text="Halt swing immediately, lower bucket to ground, sound horn, and establish radio contact. Resume only after proximity alarm clears and mirrors confirm clearance past 20m safety zone.", is_correct=True, explanation="Immediate safe stop neutralizes kinetic energy; verified clearance before resumption."),
                             ScenarioChoice(choice_id="C2", text="Accelerate swing to complete current truck load pass.", is_correct=False, explanation="Increases collision probability."),
-                        ]
-                    ),
-                    ScenarioStep(
-                        step_number=4,
-                        title="Confirm Safe Operating Path",
-                        prompt="The utility truck retreats past the 20m safety zone. When is it safe to resume?",
-                        choices=[
-                            ScenarioChoice(choice_id="C1", text="Confirm proximity alarm clears, re-check mirrors, and resume at controlled swing speed.", is_correct=True, explanation="Verified clearance before resumption."),
-                            ScenarioChoice(choice_id="C2", text="Swing rapidly without visual check.", is_correct=False, explanation="Second hazard could be present."),
                         ]
                     ),
                 ],
@@ -287,15 +277,15 @@ class TrainingService:
     def get_recommendations(self, operator_id: str, signal: Optional[str] = None) -> List[TrainingRecommendationModel]:
         """Return personalized training recommendations based on contextual operational signals."""
         signal_map = [
-            ("seatbelt violation", "SAFE_START_01", "Safe Start Check", "Seatbelt non-compliance detected. Review safe operating procedures and startup sequence before continuing."),
-            ("proximity event", "PROXIMITY_RESPONSE_01", "Proximity Response", "Proximity boundary alert triggered. Review site hazard identification and response guidelines."),
-            ("high idle", "IDLE_EFFICIENCY_01", "Idle Efficiency Response", "Excessive low-idle operation observed. Review engine power management and queue mitigation techniques."),
-            ("decision-related pattern", "DECISION_AWARENESS_01", "Decision Awareness", "Emergent tactical decision point encountered. Review consequence graphs and trajectory trade-offs."),
+            ("seatbelt violation", "SAFE_START_01", "Safe Start Check", "Seatbelt non-compliance detected. Review safe operating procedures and startup sequence before continuing.", TrainingUrgency.HIGH),
+            ("proximity event", "PROXIMITY_RESPONSE_01", "Proximity Response", "Proximity boundary alert triggered. Review site hazard identification and response guidelines.", TrainingUrgency.HIGH),
+            ("high idle", "IDLE_EFFICIENCY_01", "Idle Efficiency Response", "Excessive low-idle operation observed. Review engine power management and queue mitigation techniques.", TrainingUrgency.MEDIUM),
+            ("decision-related pattern", "DECISION_AWARENESS_01", "Decision Awareness", "Emergent tactical decision point encountered. Review consequence graphs and trajectory trade-offs.", TrainingUrgency.MEDIUM),
         ]
 
         recs: List[TrainingRecommendationModel] = []
-        for sig_name, module_id, title, reason in signal_map:
-            if signal and signal.lower() not in sig_name.lower():
+        for sig_name, module_id, title, reason, urgency in signal_map:
+            if signal and signal.lower().replace("_", " ") not in sig_name.lower():
                 continue
             recs.append(
                 TrainingRecommendationModel(
@@ -303,7 +293,7 @@ class TrainingService:
                     operator_id=operator_id,
                     module_id=module_id,
                     module_title=title,
-                    urgency=TrainingUrgency.MEDIUM,
+                    urgency=urgency,
                     trigger_source="CONTEXT_SIGNAL",
                     reason=reason,
                     signal=sig_name,
@@ -343,14 +333,22 @@ class TrainingService:
     def get_progress(self, operator_id: str) -> TrainingProgressModel:
         """Retrieve the cumulative operator training progress."""
         operator_attempts = [a for a in self._attempts if a.operator_id == operator_id]
-        completed_modules_count = len({a.module_id for a in operator_attempts}) if operator_attempts else 0
+        passed_modules = {a.module_id for a in operator_attempts if a.passed}
+        completed_modules_count = len(passed_modules)
         avg_percentage = round(sum(a.percentage for a in operator_attempts) / len(operator_attempts), 2) if operator_attempts else 0.0
+
+        # Conditional certifications based on modules actually passed
+        certs = []
+        if "SAFE_START_01" in passed_modules:
+            certs.append("CAT Level 1 Safety Basics")
+        if "DECISION_AWARENESS_01" in passed_modules:
+            certs.append("Decision Awareness Fundamentals")
 
         return TrainingProgressModel(
             operator_id=operator_id,
-            completed_modules_count=max(1, completed_modules_count) if operator_attempts else 0,
+            completed_modules_count=completed_modules_count,
             average_score_pct=avg_percentage,
-            certifications_earned=["CAT Level 1 Safety Basics", "Decision Awareness Fundamentals"],
+            certifications_earned=certs,
             last_activity_at=max((a.completed_at for a in operator_attempts), default=datetime.now(timezone.utc)),
         )
 

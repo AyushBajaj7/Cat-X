@@ -96,8 +96,21 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({ dashboard, demoState
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Bench 2 North Trenching & Excavation
             </h2>
-            <p className="text-xs text-gray-300">
-              Excavator <span className="font-mono text-[#FFCD11] font-bold">EXC-CAT-349D</span> • Material:{' '}
+            <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
+              <span className="text-xs text-gray-300">
+                Operator: <span className="font-mono text-[#FFCD11] font-bold">{twin?.operator_id || demoState?.operator_id || 'OP1001'}</span>
+              </span>
+              <span className="text-xs text-gray-500">|</span>
+              <span className="text-xs text-gray-300">
+                Machine: <span className="font-mono text-[#FFCD11] font-bold">{twin?.machine_id || demoState?.machine_id || 'EXC-CAT-349D'}</span>
+              </span>
+              <span className="text-xs text-gray-500">|</span>
+              <span className="text-xs text-gray-300">
+                State: <span className="font-bold text-emerald-400">{twin?.productivity?.efficiency_rating || 'EXCAVATING & LOADING'}</span>
+              </span>
+            </div>
+            <p className="text-xs text-gray-300 mt-1">
+              Material:{' '}
               <span className="text-white font-medium">Sandstone Overburden</span> • Shift Time:{' '}
               <span className="font-mono text-white font-bold">Hour 3.5 of 8.0</span>
             </p>

@@ -37,18 +37,19 @@ class ServiceClients:
         return results
 
     async def forward_telemetry(self, telemetry: Dict[str, Any]) -> Dict[str, Any]:
-        """Fan out telemetry event to the safety service."""
+        """Fan out telemetry event to safety and operations services."""
+        results: Dict[str, Any] = {}
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            try:
-                resp = await client.post(
-                    f"{settings.safety_service_url}/api/v1/safety/telemetry",
-                    json=telemetry,
-                )
-                if resp.status_code == 200:
-                    return resp.json()
-            except Exception:
-                pass
-        return {"status": "BUFFERED_OFFLINE"}
+            for name, url in [
+                ("safety", f"{settings.safety_service_url}/api/v1/safety/telemetry"),
+                ("operations", f"{settings.operations_service_url}/api/v1/telemetry"),
+            ]:
+                try:
+                    resp = await client.post(url, json=telemetry, timeout=3.0)
+                    results[name] = resp.json() if resp.status_code in (200, 202) else {"status": "ERROR", "code": resp.status_code}
+                except Exception:
+                    results[name] = {"status": "UNAVAILABLE"}
+        return {"event_id": telemetry.get("event_id", ""), "fanout": results}
 
     async def get_safety_status(self, operator_id: str) -> Dict[str, Any]:
         """Fetch safety status from the safety service, or demo state if offline."""
@@ -183,7 +184,30 @@ class ServiceClients:
                     return resp.json()
             except Exception:
                 pass
+        # Fallback: when training service is offline, use signal-to-module mapping
         demo_info = demo_engine.get_current_state()
+        signal_map = {
+            "seatbelt": ("SAFE_START_01", "Safe Start Check", "Seatbelt non-compliance detected. Review safe operating procedures.", "HIGH"),
+            "proximity": ("PROXIMITY_RESPONSE_01", "Proximity Response", "Proximity boundary alert triggered. Review hazard response guidelines.", "HIGH"),
+            "idle": ("IDLE_EFFICIENCY_01", "Idle Efficiency Response", "Excessive low-idle operation observed. Review engine power management.", "MEDIUM"),
+            "high idle": ("IDLE_EFFICIENCY_01", "Idle Efficiency Response", "Excessive low-idle operation observed. Review engine power management.", "MEDIUM"),
+            "decision": ("DECISION_AWARENESS_01", "Decision Awareness", "Emergent tactical decision point encountered. Review consequence graphs.", "MEDIUM"),
+        }
+        if signal:
+            normalized = signal.lower().replace("_", " ")
+            for key, (mod_id, mod_title, reason, urgency) in signal_map.items():
+                if key in normalized:
+                    return [{
+                        "recommendation_id": f"REC-{operator_id}-{mod_id}",
+                        "operator_id": operator_id,
+                        "module_id": mod_id,
+                        "module_title": mod_title,
+                        "urgency": urgency,
+                        "trigger_source": "CONTEXT_SIGNAL",
+                        "reason": reason,
+                        "recommended_at": demo_info["timestamp"],
+                    }]
+        # No signal filter: return demo engine's top recommendation
         if demo_info.get("top_training_recommendation"):
             rec = demo_info["top_training_recommendation"]
             return [
