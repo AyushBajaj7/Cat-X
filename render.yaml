@@ -89,12 +89,11 @@ services:
           property: host
 
   # 5. Frontend Dashboard UI
-  - type: web
+  - type: static
     name: cat-frontend
-    env: static
+    runtime: static
     buildCommand: cd member3-experience/frontend && npm install && npm run build
     staticPublishPath: ./member3-experience/frontend/dist
-    plan: free
     routes:
       - type: rewrite
         source: /*
