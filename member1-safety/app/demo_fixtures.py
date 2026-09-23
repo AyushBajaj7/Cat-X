@@ -10,7 +10,7 @@ These 6 scenarios showcase the end-to-end intelligence of Engineer 1's domain:
 """
 
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from typing import Any, Dict, List
 from .models import (
     EnvironmentTelemetry,
     MachineTelemetry,
