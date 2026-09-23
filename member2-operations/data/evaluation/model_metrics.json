@@ -1,0 +1,36 @@
+{
+  "status": "TRAINED",
+  "selected_model": "linear",
+  "validation_metrics": {
+    "baseline_median": {
+      "mae": 21.35,
+      "rmse": 45.05,
+      "r2": -0.1193
+    },
+    "linear_regression": {
+      "mae": 17.56,
+      "rmse": 33.07,
+      "r2": 0.3968
+    },
+    "random_forest": {
+      "mae": 21.45,
+      "rmse": 43.1,
+      "r2": -0.0246
+    },
+    "gradient_boosting": {
+      "mae": 18.04,
+      "rmse": 41.56,
+      "r2": 0.0476
+    }
+  },
+  "rf_interval_metrics": {
+    "mae": 21.45,
+    "rmse": 43.1,
+    "r2": -0.0246
+  },
+  "target_baseline_comparison": {
+    "baseline_median_mae": 21.35,
+    "selected_model_mae": 17.56,
+    "mae_improvement_pct": 17.75
+  }
+}
