@@ -22,6 +22,8 @@ class MachineInfo(BaseModel):
     category: str = "EXCAVATOR"
     payload_capacity_tons: float = 28.0
     status: str = "OPERATIONAL"
+    total_operating_hours: float = 3450.0
+    machine_age_years: float = 3.5
 
 
 class TaskInfo(BaseModel):

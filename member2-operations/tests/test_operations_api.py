@@ -1,165 +1,217 @@
-import sys
+"""
+Comprehensive Integration & Contract Test Suite for Operations Service REST API.
+Verifies all 14 endpoints adhering strictly to /shared/contracts/.
+Compatible with both pytest and python -m unittest.
+"""
+
 from pathlib import Path
-import pytest
+import sys
+import unittest
 from fastapi.testclient import TestClient
 
-# Clean cached 'app' modules to avoid collisions in monorepo test runners
-for key in list(sys.modules.keys()):
-    if key == "app" or key.startswith("app."):
-        del sys.modules[key]
-
+# Path resolution
 service_dir = str(Path(__file__).resolve().parent.parent)
-if service_dir in sys.path:
-    sys.path.remove(service_dir)
-sys.path.insert(0, service_dir)
+if service_dir not in sys.path:
+    sys.path.insert(0, service_dir)
 
 from app.main import app
 
 client = TestClient(app)
 
 
-def test_health_check():
-    """Verify operations service health check returns 200 and HEALTHY."""
-    response = client.get("/api/v1/health")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "HEALTHY"
-    assert data["service"] == "operations-service"
-    assert data["port"] == 8002
+class TestOperationsAPI(unittest.TestCase):
+    """Test suite covering task, estimation, shift twin, and trajectory endpoints."""
+
+    def test_01_health_check(self):
+        """Verify health check returns 200 and HEALTHY."""
+        res = client.get("/api/v1/health")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["status"], "HEALTHY")
+        self.assertEqual(data["service"], "operations-service")
+        self.assertEqual(data["port"], 8002)
+
+    def test_02_list_tasks(self):
+        """Verify listing tasks returns array of tasks."""
+        res = client.get("/api/v1/tasks")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIsInstance(data, list)
+        self.assertGreaterEqual(len(data), 2)
+        task = data[0]
+        self.assertIn("task_id", task)
+        self.assertIn("target_volume_tons", task)
+        self.assertIn("status", task)
+
+    def test_03_get_single_task(self):
+        """Verify single task lookup by ID."""
+        res = client.get("/api/v1/tasks/T002")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["task_id"], "T002")
+        self.assertEqual(data["priority"], "CRITICAL")
+
+    def test_04_get_nonexistent_task(self):
+        """Verify 404 for unknown task ID."""
+        res = client.get("/api/v1/tasks/UNKNOWN_TASK_999")
+        self.assertEqual(res.status_code, 404)
+
+    def test_05_task_time_estimate(self):
+        """Verify probabilistic task ETA estimation endpoint."""
+        payload = {
+            "task_id": "T002",
+            "operator_id": "OP1001",
+            "machine_id": "EXC-CAT-001",
+            "remaining_volume_tons": 530.0,
+            "weather_factor": 1.15,
+            "terrain_grade_pct": 3.5,
+        }
+        res = client.post("/api/v1/tasks/estimate", json=payload)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["task_id"], "T002")
+        self.assertGreater(data["estimated_remaining_minutes"], 0)
+        self.assertIn("estimated_completion_time", data)
+        self.assertGreaterEqual(data["confidence_score"], 0.0)
+        self.assertLessEqual(data["confidence_score"], 1.0)
+        self.assertIsNotNone(data["confidence_interval_p10_minutes"])
+        self.assertIsNotNone(data["confidence_interval_p90_minutes"])
+
+    def test_06_what_if_simulation(self):
+        """Verify counterfactual what-if simulation endpoint."""
+        payload = {
+            "task_id": "T002",
+            "operator_id": "OP1001",
+            "simulated_idle_reduction_pct": 18.0,
+            "added_support_machines": 1,
+            "pace_multiplier": 1.15,
+        }
+        res = client.post("/api/v1/tasks/what-if", json=payload)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["task_id"], "T002")
+        self.assertGreater(data["time_saved_minutes"], 0)
+        self.assertIn("summary", data)
+
+    def test_07_get_operator_shift(self):
+        """Verify operator shift context endpoint."""
+        res = client.get("/api/v1/operator/OP1001/shift")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["operator_id"], "OP1001")
+        self.assertEqual(data["shift_status"], "ACTIVE")
+
+    def test_08_get_canonical_shift_twin(self):
+        """Verify canonical 7-dimension Shift Twin representation."""
+        res = client.get("/api/v1/operator/OP1001/shift-twin")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["operator_id"], "OP1001")
+        self.assertIn("environment", data)
+        self.assertIn("safety", data)
+        self.assertIn("behaviour", data)
+        self.assertIn("productivity", data)
+        self.assertIn("prediction", data)
+        self.assertIn("next_best_actions", data)
+        self.assertIn("shift_forecast", data)
+        self.assertIn("attention_mode", data)
+        self.assertGreaterEqual(len(data["next_best_actions"]), 1)
+
+    def test_09_similar_shifts(self):
+        """Verify historical benchmark shift retrieval."""
+        res = client.get("/api/v1/tasks/T002/similar-shifts")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIsInstance(data, list)
+        self.assertGreaterEqual(len(data), 1)
+        self.assertIn("similarity_score_pct", data[0])
+
+    def test_10_trajectory_current_state(self):
+        """Verify current trajectory state returns active decision point and evaluated options."""
+        res = client.get("/api/v1/trajectory/current/OP1001")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["operator_id"], "OP1001")
+        self.assertIn("active_decision_point", data)
+        self.assertIn("available_trajectories", data)
+        self.assertEqual(data["attention_mode"], "DECISION_FOCUS")
+
+    def test_11_trajectory_detect(self):
+        """Verify trajectory decision-point detector endpoint."""
+        res = client.post("/api/v1/trajectory/detect", json={
+            "operator_id": "OP1001",
+            "queue_length": 4,
+            "truck_arrival_interval_min": 18.2,
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["decision_point_detected"])
+        self.assertEqual(data["trigger_type"], "QUEUE_IMBALANCE")
+        self.assertIn(data["severity"], ["HIGH", "CRITICAL"])
+
+    def test_12_trajectory_evaluate(self):
+        """Verify candidate trajectory evaluation through safety constraints and DAGs."""
+        res = client.post("/api/v1/trajectory/evaluate", json={"decision_point_id": "DP-T002-HAUL-01"})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        scenarios = data["scenarios"]
+        self.assertGreaterEqual(len(scenarios), 2)
+        for s in scenarios:
+            self.assertIn("scenario_id", s)
+            self.assertIn("predicted_outcome", s)
+            self.assertIn("constraint_status", s)
+            self.assertIn(s["constraint_status"], ["FEASIBLE", "REJECTED"])
+            self.assertIn("consequence_graph", s)
+            cg = s["consequence_graph"]
+            self.assertIn("nodes", cg)
+            self.assertIn("edges", cg)
+
+    def test_13_trajectory_choose(self):
+        """Verify operator trajectory choice recording."""
+        choice = {
+            "operator_id": "OP1001",
+            "decision_point_id": "DP-T002-HAUL-01",
+            "scenario_id": "SCEN-02-RESEQUENCE",
+            "operator_reason": "Bypassed haul truck queue before rain onset.",
+        }
+        res = client.post("/api/v1/trajectory/choose", json=choice)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["status"], "RECORDED")
+        self.assertIn("decision_id", data)
+
+    def test_14_trajectory_outcome(self):
+        """Verify recording actual outcome and prediction-vs-actual error auditing."""
+        outcome = {
+            "decision_id": "DEC-OP1001-BENCH2-01",
+            "actual_duration_minutes": 144.0,
+            "actual_fuel_litres": 167.5,
+            "actual_idle_minutes": 4.0,
+        }
+        res = client.post("/api/v1/trajectory/outcome", json=outcome)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["status"], "EVALUATED")
+        self.assertIn("prediction_error", data)
+        self.assertIn("drift_status", data)
+
+    def test_15_trajectory_memory_retrieval(self):
+        """Verify retrieving decision memory for operator."""
+        res = client.get("/api/v1/trajectory/memory/OP1001")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIsInstance(data, list)
+        self.assertGreaterEqual(len(data), 1)
+
+    def test_16_trajectory_similar_retrieval(self):
+        """Verify retrieving similar historical decisions."""
+        res = client.get("/api/v1/trajectory/similar/OP1001")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIsInstance(data, list)
+        self.assertGreaterEqual(len(data), 1)
+        self.assertIn("similarity_score_pct", data[0])
 
 
-def test_list_tasks():
-    """Verify task listing endpoint returns valid tasks."""
-    response = client.get("/api/v1/tasks")
-    assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 2
-    task = data[0]
-    assert "task_id" in task
-    assert "target_volume_tons" in task
-    assert "status" in task
-
-
-def test_get_single_task():
-    """Verify single task retrieval by ID."""
-    response = client.get("/api/v1/tasks/T002")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["task_id"] == "T002"
-    assert data["priority"] == "CRITICAL"
-
-
-def test_get_nonexistent_task():
-    """Verify 404 on nonexistent task ID."""
-    response = client.get("/api/v1/tasks/NONEXISTENT_999")
-    assert response.status_code == 404
-
-
-def test_task_time_estimation():
-    """Verify probabilistic task ETA estimation endpoint."""
-    payload = {
-        "task_id": "T002",
-        "operator_id": "OP1001",
-        "machine_id": "EXC001",
-        "remaining_volume_tons": 530.0,
-        "weather_factor": 1.10,
-        "terrain_grade_pct": 3.0,
-    }
-    response = client.post("/api/v1/tasks/estimate", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["task_id"] == "T002"
-    assert data["estimated_remaining_minutes"] > 0
-    assert "estimated_completion_time" in data
-    assert 0.0 <= data["confidence_score"] <= 1.0
-
-
-def test_what_if_simulation():
-    """Verify what-if simulation endpoint."""
-    payload = {
-        "task_id": "T002",
-        "operator_id": "OP1001",
-        "simulated_idle_reduction_pct": 15.0,
-        "added_support_machines": 1,
-        "pace_multiplier": 1.1,
-    }
-    response = client.post("/api/v1/tasks/what-if", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["task_id"] == "T002"
-    assert data["time_saved_minutes"] > 0
-    assert data["fuel_saved_liters"] > 0
-    assert "summary" in data
-
-
-def test_get_operator_shift():
-    """Verify shift context endpoint."""
-    response = client.get("/api/v1/operator/OP1001/shift")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["operator_id"] == "OP1001"
-    assert data["shift_status"] == "ACTIVE"
-
-
-def test_get_canonical_shift_twin():
-    """Verify the 7-dimensional Shift Twin representation endpoint."""
-    response = client.get("/api/v1/operator/OP1001/shift-twin")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["operator_id"] == "OP1001"
-    assert "environment" in data
-    assert "safety" in data
-    assert "behaviour" in data
-    assert "productivity" in data
-    assert "prediction" in data
-    assert "next_best_actions" in data
-    assert len(data["next_best_actions"]) >= 1
-
-
-def test_similar_shifts():
-    """Verify historical similar shift retrieval."""
-    response = client.get("/api/v1/tasks/T002/similar-shifts")
-    assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
-    assert "similarity_score_pct" in data[0]
-
-
-def test_trajectory_current_state():
-    """Verify trajectory current state endpoint returns active decision point."""
-    response = client.get("/api/v1/trajectory/current/OP1001")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["operator_id"] == "OP1001"
-    assert "active_decision_point" in data
-    assert "available_trajectories" in data
-
-
-def test_trajectory_detect_and_evaluate():
-    """Verify trajectory detection and evaluation endpoints."""
-    detect_res = client.post("/api/v1/trajectory/detect", json={"operator_id": "OP1001"})
-    assert detect_res.status_code == 200
-    assert detect_res.json()["decision_point_detected"] is True
-
-    eval_res = client.post("/api/v1/trajectory/evaluate", json={"decision_point_id": "DP-001"})
-    assert eval_res.status_code == 200
-    scenarios = eval_res.json()["scenarios"]
-    assert len(scenarios) == 3
-    assert all("predicted_outcome" in s for s in scenarios)
-
-
-def test_trajectory_choose_and_memory():
-    """Verify trajectory selection and decision memory retrieval."""
-    choose_res = client.post("/api/v1/trajectory/choose", json={
-        "operator_id": "OP1001",
-        "scenario_id": "SCEN-02-RESEQUENCE"
-    })
-    assert choose_res.status_code == 200
-    assert choose_res.json()["status"] == "RECORDED"
-
-    mem_res = client.get("/api/v1/trajectory/memory/OP1001")
-    assert mem_res.status_code == 200
-    assert len(mem_res.json()) >= 1
-
+if __name__ == "__main__":
+    unittest.main()

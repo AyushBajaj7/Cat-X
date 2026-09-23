@@ -30,9 +30,13 @@ def get_engine():
     except Exception:
         pass
 
-    # Fallback to local SQLite database
-    sqlite_url = "sqlite:///./operations.db"
-    return create_engine(sqlite_url, connect_args={"check_same_thread": False})
+    # Fallback to in-memory SQLite database
+    from sqlalchemy.pool import StaticPool
+    return create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
 
 
 engine = get_engine()
