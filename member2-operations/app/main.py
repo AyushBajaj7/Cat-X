@@ -24,6 +24,7 @@ app.include_router(operations_router)
 app.include_router(trajectory_router)
 
 
+@app.get("/health", tags=["health"])
 @app.get("/api/v1/health", tags=["health"])
 async def health_check():
     """Service health check endpoint."""
