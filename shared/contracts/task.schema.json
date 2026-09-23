@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TaskSchema",
+  "description": "Schema for tasks, task assignments, machines, and operators.",
+  "type": "object",
+  "definitions": {
+    "Operator": {
+      "type": "object",
+      "properties": {
+        "operator_id": { "type": "string" },
+        "name": { "type": "string" },
+        "experience_tier": { "type": "string", "enum": ["NOVICE", "INTERMEDIATE", "EXPERT", "MASTER"] },
+        "total_operating_hours": { "type": "number", "minimum": 0.0 },
+        "certifications": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["operator_id", "name", "experience_tier", "total_operating_hours"]
+    },
+    "Machine": {
+      "type": "object",
+      "properties": {
+        "machine_id": { "type": "string" },
+        "model": { "type": "string" },
+        "category": { "type": "string", "enum": ["EXCAVATOR", "DOZER", "HAUL_TRUCK", "LOADER", "MOTOR_GRADER"] },
+        "payload_capacity_tons": { "type": "number", "minimum": 0.0 },
+        "status": { "type": "string", "enum": ["OPERATIONAL", "MAINTENANCE_REQUIRED", "STANDBY", "OUT_OF_SERVICE"] }
+      },
+      "required": ["machine_id", "model", "category", "payload_capacity_tons", "status"]
+    },
+    "Task": {
+      "type": "object",
+      "properties": {
+        "task_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "site_zone": { "type": "string" },
+        "target_volume_tons": { "type": "number", "minimum": 0.0 },
+        "completed_volume_tons": { "type": "number", "minimum": 0.0 },
+        "status": { "type": "string", "enum": ["PENDING", "IN_PROGRESS", "PAUSED", "COMPLETED"] },
+        "priority": { "type": "string", "enum": ["LOW", "NORMAL", "HIGH", "CRITICAL"] },
+        "estimated_duration_minutes": { "type": "number", "minimum": 0.0 },
+        "actual_duration_minutes": { "type": "number", "minimum": 0.0 },
+        "assigned_operator_id": { "type": "string" },
+        "assigned_machine_id": { "type": "string" },
+        "scheduled_start": { "type": "string", "format": "date-time" },
+        "actual_start": { "type": ["string", "null"], "format": "date-time" },
+        "actual_end": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "required": ["task_id", "title", "site_zone", "target_volume_tons", "completed_volume_tons", "status", "priority", "estimated_duration_minutes"]
+    },
+    "TaskAssignment": {
+      "type": "object",
+      "properties": {
+        "assignment_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "assigned_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assignment_id", "task_id", "operator_id", "machine_id", "assigned_at"]
+    }
+  },
+  "$ref": "#/definitions/Task"
+}

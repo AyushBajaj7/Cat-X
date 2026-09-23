@@ -1,0 +1,79 @@
+name: Monorepo CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-architecture:
+    name: Architecture & Contract Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Repository Validation
+        run: python scripts/validate_repo.py
+
+  backend-tests:
+    name: Backend Test Suites
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - path: services/safety
+          - path: services/operations
+          - path: services/training
+          - path: integration/gateway
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ${{ matrix.service.path }}/requirements.txt
+
+      - name: Run Pytest
+        run: |
+          cd ${{ matrix.service.path }}
+          pytest tests/ -v
+
+  frontend-check:
+    name: Frontend Build & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Install Node Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Type Check & Build
+        run: |
+          cd frontend
+          npm run build

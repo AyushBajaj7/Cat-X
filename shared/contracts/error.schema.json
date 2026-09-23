@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ErrorResponseSchema",
+  "description": "Standardized error response schema across all services in the CAT Operator Shift Twin monorepo.",
+  "type": "object",
+  "properties": {
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "VALIDATION_ERROR",
+        "NOT_FOUND",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "CONFLICT",
+        "SERVICE_UNAVAILABLE",
+        "BAD_GATEWAY",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "message": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "details": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": ["error_code", "message", "timestamp"]
+}

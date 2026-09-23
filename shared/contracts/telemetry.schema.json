@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TelemetrySchema",
+  "description": "Schema for machine, operator, and environmental telemetry events ingested by CAT Operator Shift Twin.",
+  "type": "object",
+  "definitions": {
+    "GeoLocation": {
+      "type": "object",
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90.0, "maximum": 90.0 },
+        "longitude": { "type": "number", "minimum": -180.0, "maximum": 180.0 },
+        "elevation_m": { "type": "number" }
+      },
+      "required": ["latitude", "longitude"]
+    },
+    "MachineState": {
+      "type": "object",
+      "properties": {
+        "engine_rpm": { "type": "number", "minimum": 0 },
+        "engine_temp_c": { "type": "number" },
+        "hydraulic_pressure_kpa": { "type": "number", "minimum": 0 },
+        "fuel_rate_lph": { "type": "number", "minimum": 0 },
+        "speed_kmh": { "type": "number", "minimum": 0 },
+        "location": { "$ref": "#/definitions/GeoLocation" },
+        "operating_hours": { "type": "number", "minimum": 0 },
+        "active_fault_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["engine_rpm", "engine_temp_c", "hydraulic_pressure_kpa", "fuel_rate_lph", "speed_kmh"]
+    },
+    "OperatorState": {
+      "type": "object",
+      "properties": {
+        "seatbelt_fastened": { "type": "boolean" },
+        "fatigue_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "heart_rate_bpm": { "type": "number", "minimum": 30, "maximum": 220 },
+        "continuous_hours": { "type": "number", "minimum": 0.0 }
+      },
+      "required": ["seatbelt_fastened", "fatigue_score"]
+    },
+    "EnvironmentState": {
+      "type": "object",
+      "properties": {
+        "weather_condition": { "type": "string", "enum": ["CLEAR", "RAIN", "MUD", "FOG", "SNOW", "HIGH_WIND"] },
+        "ambient_temp_c": { "type": "number" },
+        "ground_saturation_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "terrain_grade_pct": { "type": "number" },
+        "visibility_meters": { "type": "number", "minimum": 0.0 }
+      },
+      "required": ["weather_condition", "ambient_temp_c", "ground_saturation_pct"]
+    },
+    "TelemetryEvent": {
+      "type": "object",
+      "properties": {
+        "event_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "machine_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "machine": { "$ref": "#/definitions/MachineState" },
+        "operator": { "$ref": "#/definitions/OperatorState" },
+        "environment": { "$ref": "#/definitions/EnvironmentState" }
+      },
+      "required": ["event_id", "timestamp", "machine_id", "operator_id", "machine", "operator"]
+    }
+  },
+  "$ref": "#/definitions/TelemetryEvent"
+}

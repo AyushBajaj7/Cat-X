@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SafetySchema",
+  "description": "Schema for safety alerts, incidents, behaviour analyses, and operator safety status.",
+  "type": "object",
+  "definitions": {
+    "SafetyAlert": {
+      "type": "object",
+      "properties": {
+        "alert_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "alert_type": {
+          "type": "string",
+          "enum": ["SEATBELT_UNBUCKLED", "PROXIMITY_HAZARD", "EXCESSIVE_IDLE", "UNSAFE_OPERATION", "ZONE_RESTRICTION", "EQUIPMENT_OVERHEAT"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        },
+        "message": { "type": "string" },
+        "acknowledged": { "type": "boolean" },
+        "distance_meters": { "type": "number", "minimum": 0.0 }
+      },
+      "required": ["alert_id", "timestamp", "operator_id", "machine_id", "alert_type", "severity", "message", "acknowledged"]
+    },
+    "Incident": {
+      "type": "object",
+      "properties": {
+        "incident_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "incident_type": {
+          "type": "string",
+          "enum": ["COLLISION_NEAR_MISS", "SEATBELT_VIOLATION", "ROLLOVER_RISK", "UNAUTHORIZED_ZONE_ENTRY", "EQUIPMENT_ABUSE"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        },
+        "description": { "type": "string" },
+        "logged_by": { "type": "string" }
+      },
+      "required": ["incident_id", "timestamp", "operator_id", "machine_id", "incident_type", "severity", "description", "logged_by"]
+    },
+    "BehaviourAnalysis": {
+      "type": "object",
+      "properties": {
+        "analysis_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "excessive_idling_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "aggressive_maneuver_count": { "type": "integer", "minimum": 0 },
+        "unsafe_speed_events": { "type": "integer", "minimum": 0 },
+        "cycle_consistency_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "overall_behaviour_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["analysis_id", "operator_id", "timestamp", "overall_behaviour_score", "flags"]
+    },
+    "SafetyStatus": {
+      "type": "object",
+      "properties": {
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "seatbelt_fastened": { "type": "boolean" },
+        "seatbelt_compliance_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "proximity_warning_level": { "type": "string", "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "active_hazard_count": { "type": "integer", "minimum": 0 },
+        "overall_safety_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 }
+      },
+      "required": ["operator_id", "machine_id", "timestamp", "seatbelt_fastened", "seatbelt_compliance_pct", "proximity_warning_level", "active_hazard_count", "overall_safety_score"]
+    }
+  },
+  "$ref": "#/definitions/SafetyStatus"
+}

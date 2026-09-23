@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TrainingSchema",
+  "description": "Schema for training modules, personalized recommendations, simulation attempts, and operator progress.",
+  "type": "object",
+  "definitions": {
+    "TrainingModule": {
+      "type": "object",
+      "properties": {
+        "module_id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string", "enum": ["SAFETY", "ECO_OPERATION", "MACHINE_HANDLING", "SITE_PROCEDURES"] },
+        "target_machine_category": { "type": "string" },
+        "estimated_duration_minutes": { "type": "integer", "minimum": 1 },
+        "difficulty": { "type": "string", "enum": ["BEGINNER", "INTERMEDIATE", "ADVANCED"] },
+        "description": { "type": "string" },
+        "learning_objectives": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "simulator_scenario_id": { "type": ["string", "null"] }
+      },
+      "required": ["module_id", "title", "category", "estimated_duration_minutes", "difficulty", "description"]
+    },
+    "TrainingRecommendation": {
+      "type": "object",
+      "properties": {
+        "recommendation_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "module_id": { "type": "string" },
+        "module_title": { "type": "string" },
+        "urgency": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "trigger_source": { "type": "string" },
+        "reason": { "type": "string" },
+        "recommended_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["recommendation_id", "operator_id", "module_id", "module_title", "urgency", "trigger_source", "reason", "recommended_at"]
+    },
+    "TrainingAttempt": {
+      "type": "object",
+      "properties": {
+        "attempt_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "module_id": { "type": "string" },
+        "score_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "passed": { "type": "boolean" },
+        "time_spent_seconds": { "type": "integer", "minimum": 0 },
+        "completed_at": { "type": "string", "format": "date-time" },
+        "feedback": { "type": "string" }
+      },
+      "required": ["attempt_id", "operator_id", "module_id", "score_pct", "passed", "time_spent_seconds", "completed_at"]
+    },
+    "TrainingProgress": {
+      "type": "object",
+      "properties": {
+        "operator_id": { "type": "string" },
+        "completed_modules_count": { "type": "integer", "minimum": 0 },
+        "average_score_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "certifications_earned": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "last_activity_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["operator_id", "completed_modules_count", "average_score_pct", "certifications_earned", "last_activity_at"]
+    }
+  },
+  "$ref": "#/definitions/TrainingModule"
+}

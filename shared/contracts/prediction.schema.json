@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PredictionSchema",
+  "description": "Schema for task ETA predictions, what-if shift simulations, and similar-shift comparisons.",
+  "type": "object",
+  "definitions": {
+    "TaskTimeEstimate": {
+      "type": "object",
+      "properties": {
+        "task_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "estimated_remaining_minutes": { "type": "number", "minimum": 0.0 },
+        "confidence_interval_p10_minutes": { "type": "number", "minimum": 0.0 },
+        "confidence_interval_p90_minutes": { "type": "number", "minimum": 0.0 },
+        "confidence_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "weather_impact_pct": { "type": "number" },
+        "fatigue_impact_pct": { "type": "number" },
+        "estimated_completion_time": { "type": "string", "format": "date-time" }
+      },
+      "required": ["task_id", "operator_id", "machine_id", "estimated_remaining_minutes", "confidence_score", "estimated_completion_time"]
+    },
+    "WhatIfRequest": {
+      "type": "object",
+      "properties": {
+        "task_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "simulated_idle_reduction_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "weather_override": { "type": "string", "enum": ["CLEAR", "RAIN", "MUD", "FOG"] },
+        "added_support_machines": { "type": "integer", "minimum": 0 },
+        "pace_multiplier": { "type": "number", "minimum": 0.5, "maximum": 2.0 }
+      },
+      "required": ["task_id", "operator_id"]
+    },
+    "WhatIfResult": {
+      "type": "object",
+      "properties": {
+        "task_id": { "type": "string" },
+        "baseline_eta_minutes": { "type": "number", "minimum": 0.0 },
+        "simulated_eta_minutes": { "type": "number", "minimum": 0.0 },
+        "time_saved_minutes": { "type": "number" },
+        "fuel_saved_liters": { "type": "number" },
+        "safety_risk_delta_pct": { "type": "number" },
+        "summary": { "type": "string" }
+      },
+      "required": ["task_id", "baseline_eta_minutes", "simulated_eta_minutes", "time_saved_minutes", "fuel_saved_liters", "summary"]
+    },
+    "SimilarShiftResult": {
+      "type": "object",
+      "properties": {
+        "shift_id": { "type": "string" },
+        "similarity_score_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "operator_tier": { "type": "string" },
+        "machine_model": { "type": "string" },
+        "actual_duration_minutes": { "type": "number" },
+        "total_volume_tons": { "type": "number" },
+        "fuel_efficiency_tons_per_liter": { "type": "number" },
+        "safety_score": { "type": "number" },
+        "key_takeaways": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["shift_id", "similarity_score_pct", "actual_duration_minutes", "total_volume_tons", "safety_score"]
+    },
+    "ShiftContext": {
+      "type": "object",
+      "properties": {
+        "shift_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "shift_start": { "type": "string", "format": "date-time" },
+        "shift_status": { "type": "string", "enum": ["ACTIVE", "BREAK", "COMPLETED"] },
+        "elapsed_minutes": { "type": "number", "minimum": 0.0 },
+        "active_task_id": { "type": ["string", "null"] }
+      },
+      "required": ["shift_id", "operator_id", "machine_id", "shift_start", "shift_status", "elapsed_minutes"]
+    }
+  },
+  "$ref": "#/definitions/TaskTimeEstimate"
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ShiftTwinSchema",
+  "description": "Canonical schema for the CAT Operator Shift Twin digital context model.",
+  "type": "object",
+  "definitions": {
+    "NextBestAction": {
+      "type": "object",
+      "properties": {
+        "action_id": { "type": "string" },
+        "title": { "type": "string" },
+        "rationale": { "type": "string" },
+        "category": { "type": "string", "enum": ["SAFETY", "EFFICIENCY", "MAINTENANCE", "TRAINING"] },
+        "priority": { "type": "string", "enum": ["LOW", "NORMAL", "HIGH", "CRITICAL"] },
+        "estimated_benefit": { "type": "string" }
+      },
+      "required": ["action_id", "title", "rationale", "category", "priority"]
+    },
+    "ShiftTwin": {
+      "type": "object",
+      "properties": {
+        "twin_id": { "type": "string" },
+        "operator_id": { "type": "string" },
+        "machine_id": { "type": "string" },
+        "current_task_id": { "type": ["string", "null"] },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "shift_health_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "environment": {
+          "type": "object",
+          "properties": {
+            "weather_condition": { "type": "string" },
+            "ambient_temp_c": { "type": "number" },
+            "ground_saturation_pct": { "type": "number" },
+            "visibility_level": { "type": "string" }
+          },
+          "required": ["weather_condition", "ambient_temp_c", "ground_saturation_pct"]
+        },
+        "safety": {
+          "type": "object",
+          "properties": {
+            "seatbelt_status": { "type": "boolean" },
+            "seatbelt_compliance_pct": { "type": "number" },
+            "active_proximity_hazards": { "type": "integer" },
+            "safety_score": { "type": "number" }
+          },
+          "required": ["seatbelt_status", "seatbelt_compliance_pct", "safety_score"]
+        },
+        "behaviour": {
+          "type": "object",
+          "properties": {
+            "idle_percentage": { "type": "number" },
+            "aggressive_events_count": { "type": "integer" },
+            "fatigue_risk_level": { "type": "string", "enum": ["LOW", "MODERATE", "HIGH"] },
+            "behaviour_score": { "type": "number" }
+          },
+          "required": ["idle_percentage", "behaviour_score"]
+        },
+        "productivity": {
+          "type": "object",
+          "properties": {
+            "completed_volume_tons": { "type": "number" },
+            "target_volume_tons": { "type": "number" },
+            "pace_percentage": { "type": "number" },
+            "efficiency_rating": { "type": "string" }
+          },
+          "required": ["completed_volume_tons", "target_volume_tons", "pace_percentage"]
+        },
+        "prediction": {
+          "type": "object",
+          "properties": {
+            "estimated_completion_time": { "type": "string", "format": "date-time" },
+            "estimated_remaining_minutes": { "type": "number" },
+            "delay_probability_pct": { "type": "number" },
+            "confidence_score": { "type": "number" }
+          },
+          "required": ["estimated_completion_time", "estimated_remaining_minutes", "confidence_score"]
+        },
+        "next_best_actions": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/NextBestAction" }
+        }
+      },
+      "required": [
+        "twin_id",
+        "operator_id",
+        "machine_id",
+        "updated_at",
+        "shift_health_score",
+        "environment",
+        "safety",
+        "behaviour",
+        "productivity",
+        "prediction",
+        "next_best_actions"
+      ]
+    }
+  },
+  "$ref": "#/definitions/ShiftTwin"
+}

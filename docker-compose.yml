@@ -1,0 +1,126 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cat_postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cat_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cat_secure_password_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-cat_shift_twin}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cat_admin} -d ${POSTGRES_DB:-cat_shift_twin}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  safety-service:
+    build:
+      context: ./services/safety
+      dockerfile: Dockerfile
+    container_name: cat_safety_service
+    restart: unless-stopped
+    ports:
+      - "${SAFETY_SERVICE_PORT:-8001}:8001"
+    environment:
+      - PORT=8001
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cat_admin}:${POSTGRES_PASSWORD:-cat_secure_password_2026}@postgres:5432/${POSTGRES_DB:-cat_shift_twin}
+      - ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  operations-service:
+    build:
+      context: ./services/operations
+      dockerfile: Dockerfile
+    container_name: cat_operations_service
+    restart: unless-stopped
+    ports:
+      - "${OPERATIONS_SERVICE_PORT:-8002}:8002"
+    environment:
+      - PORT=8002
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cat_admin}:${POSTGRES_PASSWORD:-cat_secure_password_2026}@postgres:5432/${POSTGRES_DB:-cat_shift_twin}
+      - ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  training-service:
+    build:
+      context: ./services/training
+      dockerfile: Dockerfile
+    container_name: cat_training_service
+    restart: unless-stopped
+    ports:
+      - "${TRAINING_SERVICE_PORT:-8003}:8003"
+    environment:
+      - PORT=8003
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cat_admin}:${POSTGRES_PASSWORD:-cat_secure_password_2026}@postgres:5432/${POSTGRES_DB:-cat_shift_twin}
+      - ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  gateway:
+    build:
+      context: ./integration/gateway
+      dockerfile: Dockerfile
+    container_name: cat_api_gateway
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT:-8000}:8000"
+    environment:
+      - PORT=8000
+      - SAFETY_SERVICE_URL=http://safety-service:8001
+      - OPERATIONS_SERVICE_URL=http://operations-service:8002
+      - TRAINING_SERVICE_URL=http://training-service:8003
+      - ENV=development
+    depends_on:
+      safety-service:
+        condition: service_healthy
+      operations-service:
+        condition: service_healthy
+      training-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cat_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+    depends_on:
+      gateway:
+        condition: service_started
+
+volumes:
+  postgres_data:
+    driver: local
