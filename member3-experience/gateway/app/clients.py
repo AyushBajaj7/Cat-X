@@ -53,6 +53,20 @@ class ServiceClients:
 
     async def get_safety_status(self, operator_id: str) -> Dict[str, Any]:
         """Fetch safety status from the safety service, or demo state if offline."""
+        demo_info = demo_engine.get_current_state()
+        if demo_engine.current_step > 1:
+            return {
+                "operator_id": operator_id,
+                "machine_id": demo_engine.machine_id,
+                "timestamp": demo_info["timestamp"],
+                "seatbelt_fastened": demo_info["seatbelt_fastened"],
+                "seatbelt_compliance_pct": 72.0 if not demo_info["seatbelt_fastened"] else 99.4,
+                "proximity_warning_level": "HIGH" if demo_info["active_hazard_count"] > 0 else "NONE",
+                "active_hazard_count": demo_info["active_hazard_count"],
+                "overall_safety_score": demo_info["safety_score"],
+                "safety_state": "WARNING" if not demo_info["seatbelt_fastened"] or demo_info["active_hazard_count"] > 0 else "SAFE",
+                "attention_mode": demo_info["attention_mode"],
+            }
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
                 resp = await client.get(f"{settings.safety_service_url}/api/v1/safety/status/{operator_id}")

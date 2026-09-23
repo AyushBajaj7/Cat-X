@@ -131,7 +131,7 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) =>
+              className={({ isActive }: { isActive: boolean }) =>
                 `flex items-center space-x-1.5 px-3 py-2 rounded-md font-bold transition whitespace-nowrap ${
                   isActive
                     ? 'bg-[#FFCD11] text-[#111111] shadow'

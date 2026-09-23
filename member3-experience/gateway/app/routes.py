@@ -302,22 +302,24 @@ async def get_training_progress(operator_id: str):
 @router.get("/trajectory/current/{operator_id}")
 async def get_current_trajectory_state(operator_id: str):
     """Expose current trajectory state, decision point, and candidate trajectories."""
+    demo_info = demo_engine.get_current_state()
     async with httpx.AsyncClient(timeout=clients.timeout) as client:
         try:
             resp = await client.get(f"{settings.operations_service_url}/api/v1/trajectory/current/{operator_id}")
             if resp.status_code == 200:
                 data = resp.json()
                 # Attach rich demo consequence and explanation if available
-                demo_info = demo_engine.get_current_state()
                 if demo_info.get("decision_point"):
                     data["active_decision_point"] = demo_info["decision_point"]
                     data["scenarios"] = demo_info["scenarios"]
                     data["attention_mode"] = demo_info["attention_mode"]
+                dp = data.get("active_decision_point") or demo_info.get("decision_point")
+                data["decision_point_detected"] = dp is not None
+                data["evidence"] = dp.get("evidence", {}) if isinstance(dp, dict) else {}
                 return data
         except Exception:
             pass
 
-    demo_info = demo_engine.get_current_state()
     dp = demo_info.get("decision_point")
     return {
         "operator_id": operator_id,
@@ -356,14 +358,25 @@ async def detect_decision_point(payload: Dict[str, Any]):
 @router.post("/trajectory/evaluate")
 async def evaluate_trajectories(payload: Dict[str, Any]):
     """Proxy trajectory evaluation."""
+    demo_info = demo_engine.get_current_state()
     async with httpx.AsyncClient(timeout=clients.timeout) as client:
         try:
             resp = await client.post(f"{settings.operations_service_url}/api/v1/trajectory/evaluate", json=payload)
             if resp.status_code == 200:
-                return resp.json()
+                data = resp.json()
+                scenarios = data.get("scenarios", [])
+                for s in scenarios:
+                    if "selectable" not in s:
+                        s["selectable"] = (s.get("constraint_status") != "REJECTED")
+                demo_scenarios = demo_info.get("scenarios", [])
+                existing_ids = {s.get("scenario_id") for s in scenarios}
+                for ds in demo_scenarios:
+                    if ds.get("scenario_id") not in existing_ids:
+                        scenarios.append(ds)
+                data["scenarios"] = scenarios
+                return data
         except Exception:
             pass
-    demo_info = demo_engine.get_current_state()
     return {
         "decision_point_id": payload.get("decision_point_id", "DP-BENCH2-HAUL-01"),
         "scenarios": demo_info.get("scenarios", []),
