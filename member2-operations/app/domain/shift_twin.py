@@ -122,13 +122,19 @@ def build_shift_twin(
         current_task_id=state.current_task.task_id,
         updated_at=now,
         shift_health_score=shift_health_score,
+        attention_mode=attention_mode,
         environment=env,
         safety=safety,
         behaviour=behaviour,
         productivity=prod,
         prediction=pred,
+        shift_forecast=shift_forecast,
+        decision_point=decision_point,
+        trajectory_options=trajectory_options or [],
         next_best_actions=actions,
+        decision_trace=decision_trace or [],
+        similar_contexts=similar_contexts or [],
+        latest_decision_memory=latest_decision_memory,
     )
 
-    # Convert to schema dict if needed or return model with extras
     return twin

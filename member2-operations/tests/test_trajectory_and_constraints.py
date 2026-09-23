@@ -81,11 +81,20 @@ class TestTrajectoryAndConstraints(unittest.TestCase):
         )
         self.assertEqual(res_prox.constraint_status, "REJECTED")
 
-        # Test feasible slope
+        # Test boom reach envelope violation > 60.0 deg (CST-BOOM-01)
+        res_boom = safety_constraint_engine.validate_scenario(
+            scenario_id="SCEN-TEST-BOOM-UNSAFE",
+            state=self.state,
+            overrides={"swing_angle_deg": 65.0},
+        )
+        self.assertEqual(res_boom.constraint_status, "REJECTED")
+        self.assertTrue(any("exceeds rated stability radius" in r for r in res_boom.rejection_reasons))
+
+        # Test feasible slope and boom reach
         res_safe = safety_constraint_engine.validate_scenario(
             scenario_id="SCEN-TEST-SAFE",
             state=self.state,
-            overrides={"slope_deg": 6.5, "proximity_distance_m": 25.0},
+            overrides={"slope_deg": 6.5, "proximity_distance_m": 25.0, "swing_angle_deg": 35.0},
         )
         self.assertEqual(res_safe.constraint_status, "FEASIBLE")
 

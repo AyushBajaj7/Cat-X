@@ -43,6 +43,8 @@ SAFETY_THRESHOLDS = {
     "MIN_HIGHWALL_SETBACK_M": 4.0,       # Hard limit: 4.0m from crest edge
     "WARNING_HIGHWALL_SETBACK_M": 5.5,   # Warning setback
     "MAX_PAYLOAD_PERCENT": 108.0,        # Hard limit: 108% of rated tonnage
+    "MAX_BOOM_REACH_DEG": 60.0,          # Hard limit: boom swing beyond 60° stability radius
+    "WARNING_BOOM_REACH_DEG": 50.0,      # Warning: approaching boom stability limits
 }
 
 
@@ -183,7 +185,38 @@ class SafetyConstraintEngine:
             explanation=reason,
         ))
 
-        # 5. Determine Overall Feasibility
+        # 5. Boom Reach Envelope Constraint (CST-BOOM-01)
+        swing_angle = overrides.get("swing_angle_deg", state.machine_state.swing_angle_deg)
+        max_boom = self.thresholds.get("MAX_BOOM_REACH_DEG", 60.0)
+        warn_boom = self.thresholds.get("WARNING_BOOM_REACH_DEG", 50.0)
+
+        if swing_angle > max_boom:
+            boom_status = "VIOLATED"
+            boom_sev = "CRITICAL"
+            reason = f"Boom swing arc {swing_angle:.1f}° exceeds rated stability radius of {max_boom:.1f}°."
+            rejection_reasons.append(reason)
+        elif swing_angle >= warn_boom:
+            boom_status = "WARNING"
+            boom_sev = "HIGH"
+            reason = f"Boom swing arc {swing_angle:.1f}° approaching stability limit ({warn_boom:.1f}° warning)."
+        else:
+            boom_status = "PASS"
+            boom_sev = "LOW"
+            reason = f"Boom swing arc {swing_angle:.1f}° within safe stability envelope (<{warn_boom:.1f}°)."
+
+        items.append(ConstraintReportItem(
+            constraint_id="CST-BOOM-01",
+            name="Boom Reach Envelope Stability",
+            is_hard_constraint=True,
+            status=boom_status,
+            severity=boom_sev,
+            value=float(swing_angle),
+            threshold=float(max_boom),
+            unit="deg",
+            explanation=reason,
+        ))
+
+        # 6. Determine Overall Feasibility
         is_rejected = any(item.status == "VIOLATED" for item in items)
         constraint_status = "REJECTED" if is_rejected else "FEASIBLE"
 

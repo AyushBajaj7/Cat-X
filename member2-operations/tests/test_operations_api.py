@@ -112,9 +112,12 @@ class TestOperationsAPI(unittest.TestCase):
         self.assertIn("behaviour", data)
         self.assertIn("productivity", data)
         self.assertIn("prediction", data)
-        self.assertIn("next_best_actions", data)
         self.assertIn("shift_forecast", data)
+        self.assertIsNotNone(data["shift_forecast"])
         self.assertIn("attention_mode", data)
+        self.assertEqual(data["attention_mode"], "DECISION_FOCUS")
+        self.assertIsNotNone(data["decision_point"])
+        self.assertGreaterEqual(len(data["trajectory_options"]), 1)
         self.assertGreaterEqual(len(data["next_best_actions"]), 1)
 
     def test_09_similar_shifts(self):

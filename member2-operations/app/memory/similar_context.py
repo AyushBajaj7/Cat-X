@@ -6,12 +6,15 @@ Exposes context-aware benchmarks and historical precedent:
 "Similar situation found: Operator OP1001 saved 17 min by re-sequencing."
 """
 
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import pandas as pd
 
 from ..ml.similarity import ContextSimilarityEngine
 from ..models import SimilarShiftResultModel
+from ..persistence.database import SessionLocal
+from ..persistence.models import SimilarContextRecord
 
 OPERATIONS_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_TRAIN = OPERATIONS_DIR / "data" / "evaluation" / "train.csv"
@@ -67,6 +70,27 @@ class SimilarContextService:
                 safety_score=96.5,
                 key_takeaways=takeaways,
             ))
+
+        # Persist retrieval results to similar_contexts DB table
+        try:
+            with SessionLocal() as db:
+                for r in results:
+                    sig = self.similarity_engine.compute_context_signature(task_profile)
+                    ts = int(datetime.now(timezone.utc).timestamp() * 1000)
+                    rec = SimilarContextRecord(
+                        context_id=f"CTX-{r.shift_id}-{ts}",
+                        shift_id=r.shift_id,
+                        context_signature=sig,
+                        similarity_score_pct=r.similarity_score_pct,
+                        chosen_action=None,
+                        actual_time_saved_minutes=None,
+                        actual_fuel_saved_liters=None,
+                        key_learning="; ".join(r.key_takeaways) if r.key_takeaways else None,
+                    )
+                    db.merge(rec)
+                db.commit()
+        except Exception as e:
+            print(f"Warning: Failed to persist SimilarContextRecord to DB: {e}")
 
         return results
 
