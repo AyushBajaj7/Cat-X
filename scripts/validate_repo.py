@@ -58,10 +58,16 @@ def validate_json_schemas():
     required_contracts = [
         "telemetry.schema.json",
         "safety.schema.json",
+        "behaviour.schema.json",
         "task.schema.json",
         "prediction.schema.json",
         "shift-twin.schema.json",
+        "decision-point.schema.json",
+        "scenario.schema.json",
+        "consequence.schema.json",
+        "decision-memory.schema.json",
         "training.schema.json",
+        "dashboard.schema.json",
         "error.schema.json",
     ]
 
@@ -94,9 +100,10 @@ def validate_import_isolation():
     """Verify that no microservice imports internal modules from another microservice."""
     print("-> Checking cross-service import isolation...")
     services = {
-        "safety": REPO_ROOT / "services" / "safety",
-        "operations": REPO_ROOT / "services" / "operations",
-        "training": REPO_ROOT / "services" / "training",
+        "safety": REPO_ROOT / "member1-safety",
+        "operations": REPO_ROOT / "member2-operations",
+        "training": REPO_ROOT / "member3-experience" / "training",
+        "gateway": REPO_ROOT / "member3-experience" / "gateway",
     }
 
     errors = []
@@ -138,7 +145,7 @@ def validate_ports_uniqueness():
     print("-> Checking port allocations...")
     expected_ports = {
         "frontend": 5173,
-        "gateway": 8000,
+        "gateway": 8080,
         "safety": 8001,
         "operations": 8002,
         "training": 8003,

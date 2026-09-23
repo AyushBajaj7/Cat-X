@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ScenarioContract",
+  "description": "Schema for candidate operational trajectory scenarios evaluated by the Consequence Engine.",
+  "type": "object",
+  "required": [
+    "scenario_id",
+    "action_id",
+    "title",
+    "description",
+    "parameters",
+    "constraint_status",
+    "predicted_outcome",
+    "explanation"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^SCEN-[A-Z0-9-]+$",
+      "description": "Unique identifier for the generated scenario."
+    },
+    "action_id": {
+      "type": "string",
+      "description": "Action archetype ID (e.g., ACT-CONTINUE, ACT-RESEQUENCE, ACT-REPOSITION)."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short human-readable title of the alternative trajectory."
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed explanation of what this operational trajectory entails."
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Operational parameters varied in this scenario (e.g. idle reduction, route modification).",
+      "additionalProperties": true
+    },
+    "constraint_status": {
+      "type": "string",
+      "enum": ["FEASIBLE", "REJECTED"],
+      "description": "Safety and physical feasibility determination."
+    },
+    "predicted_outcome": {
+      "type": "object",
+      "required": ["eta_minutes", "fuel_liters", "safety_risk_score"],
+      "properties": {
+        "eta_minutes": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fuel_liters": {
+          "type": "number",
+          "minimum": 0
+        },
+        "safety_risk_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "time_saved_minutes": {
+          "type": "number"
+        },
+        "fuel_saved_liters": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Quantified multidimensional operational forecast."
+    },
+    "explanation": {
+      "type": "string",
+      "description": "Natural language rationale explaining why this trajectory is feasible/rejected and its trade-offs."
+    }
+  },
+  "additionalProperties": false
+}

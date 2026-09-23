@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ShiftTwinSchema",
-  "description": "Canonical schema for the CAT Operator Shift Twin digital context model.",
+  "description": "Canonical schema for the CAT Operator Shift Twin digital context model incorporating CAT Trajectory Consequence Engine state.",
   "type": "object",
   "definitions": {
     "NextBestAction": {
@@ -25,6 +25,18 @@
         "current_task_id": { "type": ["string", "null"] },
         "updated_at": { "type": "string", "format": "date-time" },
         "shift_health_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "attention_mode": {
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "SAFETY_FOCUS",
+            "PLANNING_FOCUS",
+            "EFFICIENCY_FOCUS",
+            "TRAINING_FOCUS",
+            "DECISION_FOCUS"
+          ],
+          "default": "NORMAL"
+        },
         "environment": {
           "type": "object",
           "properties": {
@@ -75,9 +87,36 @@
           },
           "required": ["estimated_completion_time", "estimated_remaining_minutes", "confidence_score"]
         },
+        "shift_forecast": {
+          "type": ["object", "null"],
+          "description": "Shift-level projected completion, weather risk, and fuel consumption."
+        },
+        "decision_point": {
+          "type": ["object", "null"],
+          "description": "Active operational decision point detected by CAT Trajectory engine."
+        },
+        "trajectory_options": {
+          "type": "array",
+          "items": { "type": "object" },
+          "description": "Evaluated alternative candidate trajectories."
+        },
         "next_best_actions": {
           "type": "array",
           "items": { "$ref": "#/definitions/NextBestAction" }
+        },
+        "decision_trace": {
+          "type": "array",
+          "items": { "type": "object" },
+          "description": "Trace of consecutive operational decisions made throughout the shift."
+        },
+        "similar_contexts": {
+          "type": "array",
+          "items": { "type": "object" },
+          "description": "Historical benchmark shifts operating under similar context."
+        },
+        "latest_decision_memory": {
+          "type": ["object", "null"],
+          "description": "Most recently logged decision memory item."
         }
       },
       "required": [

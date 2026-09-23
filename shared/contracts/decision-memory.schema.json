@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DecisionMemoryContract",
+  "description": "Schema for persisted operational decision memories and closed-loop prediction-vs-actual outcomes.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "operator_id",
+    "machine_id",
+    "task_id",
+    "timestamp",
+    "context_signature",
+    "available_scenarios",
+    "chosen_scenario",
+    "predicted_outcome",
+    "actual_outcome",
+    "prediction_error",
+    "operator_reason",
+    "source"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "pattern": "^DEC-[A-Z0-9-]+$",
+      "description": "Unique identifier for this logged decision event."
+    },
+    "operator_id": {
+      "type": "string",
+      "description": "Operator who evaluated and chose the trajectory."
+    },
+    "machine_id": {
+      "type": "string",
+      "description": "Machine operated during the decision point."
+    },
+    "task_id": {
+      "type": "string",
+      "description": "Task during which the decision was made."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of decision commit."
+    },
+    "context_signature": {
+      "type": "string",
+      "description": "Feature vector hash or canonical encoding of operational context for similarity lookups."
+    },
+    "available_scenarios": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of scenario IDs presented to the operator."
+    },
+    "chosen_scenario": {
+      "type": "string",
+      "description": "ID of the scenario selected by human choice."
+    },
+    "predicted_outcome": {
+      "type": "object",
+      "description": "Multidimensional predicted metrics at the moment of decision.",
+      "additionalProperties": true
+    },
+    "actual_outcome": {
+      "type": ["object", "null"],
+      "description": "Measured real-world outcome recorded after trajectory execution.",
+      "additionalProperties": true
+    },
+    "prediction_error": {
+      "type": ["object", "null"],
+      "description": "Computed delta between predicted outcome and actual outcome.",
+      "additionalProperties": true
+    },
+    "operator_reason": {
+      "type": "string",
+      "description": "Operator-provided rationale or note recorded with choice."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["OPERATOR_MANUAL_SELECT", "SYSTEM_DEFAULT_TIMEOUT", "SIMULATOR_REPLAY"],
+      "description": "Origin mechanism of decision recording."
+    }
+  },
+  "additionalProperties": false
+}

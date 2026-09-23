@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BehaviourStateContract",
+  "description": "Schema for operator behavior analysis, idling metrics, and constraint signals owned by Engineer 1.",
+  "type": "object",
+  "required": [
+    "operator_id",
+    "machine_id",
+    "timestamp",
+    "excessive_idling_score",
+    "aggressive_maneuver_count",
+    "unsafe_speed_events",
+    "cycle_consistency_pct",
+    "overall_behaviour_score",
+    "flags",
+    "anomaly_detected"
+  ],
+  "properties": {
+    "operator_id": {
+      "type": "string",
+      "description": "Unique operator ID."
+    },
+    "machine_id": {
+      "type": "string",
+      "description": "Unique machine ID."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp."
+    },
+    "excessive_idling_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percentage of operational cycle spent in unproductive high/low idle."
+    },
+    "aggressive_maneuver_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of rapid slew, heavy bucket shock, or aggressive throttle transitions."
+    },
+    "unsafe_speed_events": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of transit events exceeding grade/zone speed limit."
+    },
+    "cycle_consistency_pct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Dig-swing-dump-return cycle regularity percentage."
+    },
+    "overall_behaviour_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Composite operational behaviour rating (0-100)."
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Behavioral flags (e.g. 'IDLE_THRESHOLD_BREACH', 'HIGH_RPM_STANDSTILL')."
+    },
+    "anomaly_detected": {
+      "type": "boolean",
+      "description": "Whether an unusual machine/operator operating pattern is currently active."
+    },
+    "constraint_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Deterministic safety constraint signals emitted to Engineer 2's Trajectory engine."
+    }
+  },
+  "additionalProperties": false
+}
