@@ -152,9 +152,16 @@ class ShiftTwinModel(BaseModel):
     current_task_id: Optional[str] = None
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     shift_health_score: float = Field(..., ge=0.0, le=100.0)
+    attention_mode: str = "NORMAL"
     environment: ShiftTwinEnvironment
     safety: ShiftTwinSafety
     behaviour: ShiftTwinBehaviour
     productivity: ShiftTwinProductivity
     prediction: ShiftTwinPrediction
+    shift_forecast: Optional[Dict[str, Any]] = None
+    decision_point: Optional[Dict[str, Any]] = None
+    trajectory_options: List[Dict[str, Any]] = Field(default_factory=list)
     next_best_actions: List[NextBestActionModel] = Field(default_factory=list)
+    decision_trace: List[Dict[str, Any]] = Field(default_factory=list)
+    similar_contexts: List[Dict[str, Any]] = Field(default_factory=list)
+    latest_decision_memory: Optional[Dict[str, Any]] = None

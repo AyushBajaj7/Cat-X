@@ -1,0 +1,86 @@
+{
+  "status": "EVALUATED",
+  "test_metrics": {
+    "mae": 31.43,
+    "rmse": 61.48,
+    "r2": 0.3429,
+    "sample_count": 45
+  },
+  "edge_case_results": [
+    {
+      "task_id": "EDGE-17MIN-TRAP",
+      "task_type": "TRENCHING",
+      "scenario_name": "BENCH_2_WEST",
+      "actual_duration_minutes": 257.0,
+      "predicted_duration_minutes": 101.1,
+      "duration_error_minutes": -155.9,
+      "prototype_prediction_interval": {
+        "lower_minutes": 39.9,
+        "upper_minutes": 235.1
+      },
+      "actual_fuel_litres": 215.0,
+      "predicted_fuel_litres": 76.9,
+      "observed_idle_minutes": 42.0
+    },
+    {
+      "task_id": "EDGE-EXTREME-IDLE",
+      "task_type": "LOADING",
+      "scenario_name": "STOCKPILE_1",
+      "actual_duration_minutes": 270.0,
+      "predicted_duration_minutes": 223.8,
+      "duration_error_minutes": -46.2,
+      "prototype_prediction_interval": {
+        "lower_minutes": 34.8,
+        "upper_minutes": 191.3
+      },
+      "actual_fuel_litres": 185.0,
+      "predicted_fuel_litres": 134.7,
+      "observed_idle_minutes": 68.0
+    },
+    {
+      "task_id": "EDGE-MUD-SLIP",
+      "task_type": "EXCAVATION",
+      "scenario_name": "ZONE_4_NORTH",
+      "actual_duration_minutes": 285.0,
+      "predicted_duration_minutes": 50.4,
+      "duration_error_minutes": -234.6,
+      "prototype_prediction_interval": {
+        "lower_minutes": 30.3,
+        "upper_minutes": 61.5
+      },
+      "actual_fuel_litres": 224.0,
+      "predicted_fuel_litres": 20.8,
+      "observed_idle_minutes": 38.0
+    },
+    {
+      "task_id": "EDGE-SLOPE-LIMIT",
+      "task_type": "GRADING",
+      "scenario_name": "RAMP_3_SOUTH",
+      "actual_duration_minutes": 220.0,
+      "predicted_duration_minutes": 10.8,
+      "duration_error_minutes": -209.2,
+      "prototype_prediction_interval": {
+        "lower_minutes": 20.5,
+        "upper_minutes": 229.2
+      },
+      "actual_fuel_litres": 170.0,
+      "predicted_fuel_litres": 5.0,
+      "observed_idle_minutes": 25.0
+    },
+    {
+      "task_id": "EDGE-MASTER-BENCHMARK",
+      "task_type": "LOADING",
+      "scenario_name": "STOCKPILE_2",
+      "actual_duration_minutes": 225.0,
+      "predicted_duration_minutes": 45.4,
+      "duration_error_minutes": -179.6,
+      "prototype_prediction_interval": {
+        "lower_minutes": 12.9,
+        "upper_minutes": 290.0
+      },
+      "actual_fuel_litres": 210.0,
+      "predicted_fuel_litres": 32.3,
+      "observed_idle_minutes": 8.0
+    }
+  ]
+}
