@@ -1,0 +1,107 @@
+databases:
+  - name: cat-postgres
+    databaseName: cat_shift_twin
+    user: cat_admin
+    plan: free
+
+services:
+  # 1. Safety Service (:8001)
+  - type: web
+    name: cat-safety
+    env: docker
+    dockerfilePath: ./member1-safety/Dockerfile
+    dockerContext: ./member1-safety
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 8001
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cat-postgres
+          property: connectionString
+
+  # 2. Operations Service (:8002)
+  - type: web
+    name: cat-operations
+    env: docker
+    dockerfilePath: ./member2-operations/Dockerfile
+    dockerContext: ./member2-operations
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 8002
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cat-postgres
+          property: connectionString
+
+  # 3. Training Service (:8003)
+  - type: web
+    name: cat-training
+    env: docker
+    dockerfilePath: ./member3-experience/training/Dockerfile
+    dockerContext: ./member3-experience/training
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 8003
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cat-postgres
+          property: connectionString
+
+  # 4. API Gateway (:8080)
+  - type: web
+    name: cat-gateway
+    env: docker
+    dockerfilePath: ./member3-experience/gateway/Dockerfile
+    dockerContext: ./member3-experience/gateway
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: ENV
+        value: production
+      - key: SAFETY_SERVICE_URL
+        fromService:
+          type: web
+          name: cat-safety
+          property: host
+      - key: OPERATIONS_SERVICE_URL
+        fromService:
+          type: web
+          name: cat-operations
+          property: host
+      - key: TRAINING_SERVICE_URL
+        fromService:
+          type: web
+          name: cat-training
+          property: host
+
+  # 5. Frontend Dashboard UI
+  - type: web
+    name: cat-frontend
+    env: static
+    buildCommand: cd member3-experience/frontend && npm install && npm run build
+    staticPublishPath: ./member3-experience/frontend/dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: cat-gateway
+          property: host
