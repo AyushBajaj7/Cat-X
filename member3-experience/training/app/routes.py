@@ -1,6 +1,6 @@
 """FastAPI routes for Training Service (Port 8003)."""
 
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, status
 from .models import (
     TrainingAttemptInput,
@@ -20,12 +20,6 @@ async def list_modules():
     return training_service.list_modules()
 
 
-@router.get("/recommendations/{operator_id}", response_model=List[TrainingRecommendationModel])
-async def get_recommendations(operator_id: str):
-    """Retrieve personalized training recommendations for an operator."""
-    return training_service.get_recommendations(operator_id)
-
-
 @router.get("/modules/{module_id}", response_model=TrainingModuleModel)
 async def get_module(module_id: str):
     """Retrieve syllabus and simulator configuration for a training module."""
@@ -36,6 +30,12 @@ async def get_module(module_id: str):
             detail=f"Training module {module_id} not found."
         )
     return module
+
+
+@router.get("/recommendations/{operator_id}", response_model=List[TrainingRecommendationModel])
+async def get_recommendations(operator_id: str, signal: Optional[str] = None):
+    """Retrieve personalized training recommendations for an operator."""
+    return training_service.get_recommendations(operator_id, signal=signal)
 
 
 @router.post("/attempts", response_model=TrainingAttemptModel, status_code=status.HTTP_201_CREATED)
