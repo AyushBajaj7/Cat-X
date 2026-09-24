@@ -24,6 +24,59 @@ interface CabVoiceAssistantProps {
   currentViewMode?: 'CAB_HUD' | 'DETAILED';
 }
 
+// Web Audio API Radio Sound Synthesizer (100% offline, zero assets needed)
+const playRadioSound = (type: 'PTT_ON' | 'PTT_OFF' | 'ALERT' | 'CONFIRM') => {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    if (type === 'PTT_ON') {
+      // In-cab radio mic open chirp (880Hz -> 1320Hz)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(1320, now + 0.035);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (type === 'PTT_OFF') {
+      // Radio transmission end squelch click
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, now);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } else if (type === 'ALERT') {
+      // Dual-tone high priority safety horn
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.setValueAtTime(700, now + 0.08);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    } else if (type === 'CONFIRM') {
+      // Double positive confirmation chime
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.06);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    }
+  } catch {
+    // Tolerant of browser autoplay restrictions
+  }
+};
+
 export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
   dashboard,
   demoState,
@@ -35,9 +88,10 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [voiceAudioEnabled, setVoiceAudioEnabled] = useState<boolean>(true);
   const [autoAnnounceEnabled, setAutoAnnounceEnabled] = useState<boolean>(true);
+  const [isPTTHeld, setIsPTTHeld] = useState<boolean>(false);
   const [transcript, setTranscript] = useState<string>('');
   const [lastResponse, setLastResponse] = useState<string>(
-    'CAT Cab Radio Voice Companion active. Ask me about trucks, pace, safety, or tactical options without taking your eyes off the trench.'
+    'CAT Cab Radio Voice Companion active. Hold Spacebar or tap Push-to-Talk to query fleet, pacing, or safety without taking eyes off the bench.'
   );
   const [speechSupported, setSpeechSupported] = useState<boolean>(true);
 
@@ -47,17 +101,25 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
 
   // Text-to-Speech synthesis
   const speak = useCallback(
-    (text: string) => {
+    (text: string, isAlert: boolean = false) => {
       if (!voiceAudioEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) {
         return;
       }
       try {
         window.speechSynthesis.cancel(); // Stop any active speech
+        if (isAlert) {
+          playRadioSound('ALERT');
+        } else {
+          playRadioSound('CONFIRM');
+        }
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.02; // Crisp, clear dispatch pace
+        utterance.rate = 1.03; // Crisp, clear dispatch pace
         utterance.pitch = 0.95; // Calm, authoritative radio tone
         utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
+        utterance.onend = () => {
+          setIsSpeaking(false);
+          playRadioSound('PTT_OFF');
+        };
         utterance.onerror = () => setIsSpeaking(false);
         window.speechSynthesis.speak(utterance);
       } catch {
@@ -232,13 +294,55 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
     }
   }, [processQuery]);
 
+  // Push-to-Talk (PTT) Spacebar Hotkey (Emulating physical joystick PTT trigger)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input or textarea
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.code === 'Space' && !e.repeat && !isPTTHeld) {
+        e.preventDefault();
+        setIsPTTHeld(true);
+        playRadioSound('PTT_ON');
+        if (recognitionRef.current && !isListening) {
+          setTranscript('');
+          try {
+            recognitionRef.current.start();
+          } catch {}
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.code === 'Space' && isPTTHeld) {
+        e.preventDefault();
+        setIsPTTHeld(false);
+        playRadioSound('PTT_OFF');
+        if (recognitionRef.current && isListening) {
+          try {
+            recognitionRef.current.stop();
+          } catch {}
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [isPTTHeld, isListening]);
+
   // Toggle Voice Recognition Listening
   const toggleListening = () => {
     if (!recognitionRef.current) return;
     if (isListening) {
+      playRadioSound('PTT_OFF');
       recognitionRef.current.stop();
     } else {
       setTranscript('');
+      playRadioSound('PTT_ON');
       try {
         recognitionRef.current.start();
       } catch {
@@ -263,32 +367,32 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
         const msg =
           'Safety Warning: Seatbelt unbuckled. Hydraulic interlock engaged. Fasten harness buckle to resume operations.';
         setLastResponse(msg);
-        speak(msg);
+        speak(msg, true);
       } else if (currentStep === 3) {
         const msg =
           'Safety Alert: Object detected at 11 meters in rear swing radius. Halt boom slew.';
         setLastResponse(msg);
-        speak(msg);
+        speak(msg, true);
       } else if (currentStep === 4) {
         const msg =
           'Engine Advisory: High idle at 1800 RPM detected while waiting. Throttle back to 1000 RPM to save fuel.';
         setLastResponse(msg);
-        speak(msg);
+        speak(msg, true);
       } else if (currentStep === 5 || currentStep === 6) {
         const msg =
           'Tactical Advisory: 17-Minute Trap ahead. Haul trucks delayed at crusher with approaching rain. Say "Choose Bench 3" or tap the recovery button.';
         setLastResponse(msg);
-        speak(msg);
+        speak(msg, true);
       } else if (currentStep === 7) {
         const msg =
           'Tactical Decision Logged: Bench 3 recovery committed. Haul bottleneck bypassed.';
         setLastResponse(msg);
-        speak(msg);
+        speak(msg, false);
       } else if (currentStep === 8) {
         const msg =
           'Shift Outcome Replay: 17 minutes recovered and 14.8 liters of fuel saved. Digging cadence nominal.';
         setLastResponse(msg);
-        speak(msg);
+        speak(msg, false);
       }
     }
   }, [demoState?.current_step, dashboard?.attention_mode, autoAnnounceEnabled, voiceAudioEnabled, speak]);
@@ -368,15 +472,20 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
             type="button"
             onClick={toggleListening}
             className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all cursor-pointer ${
-              isListening
+              isPTTHeld || isListening
                 ? 'bg-rose-600 text-white animate-pulse ring-4 ring-rose-600/40 scale-105'
                 : isSpeaking
                 ? 'bg-[#FFCD11] text-black ring-2 ring-[#FFCD11]/50'
                 : 'bg-[#2E2E2E] hover:bg-[#3D3D3D] text-white border border-[#444444]'
             }`}
-            title="Click to talk (or click any quick query below)"
+            title="Click to talk, or HOLD Spacebar on your keyboard (emulates joystick trigger)"
           >
-            {isListening ? (
+            {isPTTHeld ? (
+              <>
+                <Mic className="w-4 h-4 animate-bounce" />
+                <span>PTT Trigger Held...</span>
+              </>
+            ) : isListening ? (
               <>
                 <Mic className="w-4 h-4 animate-bounce" />
                 <span>Listening...</span>
@@ -389,12 +498,32 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
             ) : (
               <>
                 <Mic className="w-4 h-4 text-[#FFCD11]" />
-                <span>Speak to CAT</span>
+                <span>PTT Mic (Hold Space)</span>
               </>
             )}
           </button>
         </div>
       </div>
+
+      {/* Industrial Reliability & Acoustic Guardrails Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-[#141414] border border-[#262626] text-[11px] text-gray-400">
+        <div className="flex items-center space-x-2">
+          <Shield className="w-3.5 h-3.5 text-emerald-400" />
+          <span><strong>Industrial Guardrail:</strong> Joystick Push-to-Talk trigger (Hold Spacebar)</span>
+        </div>
+        <div className="flex items-center space-x-3 text-[10px] sm:text-[11px]">
+          <span className="flex items-center space-x-1">
+            <Radio className="w-3 h-3 text-[#FFCD11]" />
+            <span>Cab Noise Gate: <strong className="text-gray-300">78 dBA Nominal</strong></span>
+          </span>
+          <span>•</span>
+          <span className="flex items-center space-x-1 text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>100% Offline Edge Radio</span>
+          </span>
+        </div>
+      </div>
+
 
       {/* Radio Dispatch Output Console */}
       <div className="bg-[#121212] border border-[#262626] rounded-xl p-3.5 sm:p-4 space-y-2">
