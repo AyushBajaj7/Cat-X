@@ -232,6 +232,18 @@ export async function setDemoStep(step?: number): Promise<DemoState> {
   });
 }
 
+export async function sendVoiceCommand(payload: {
+  operator_id?: string;
+  query_text: string;
+}): Promise<any> {
+  return request<any>('/voice/command', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export const apiClient = {
   getSafetyIncidents: fetchSafetyIncidents,
+  sendVoiceCommand,
 };
+

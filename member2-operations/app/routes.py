@@ -163,3 +163,33 @@ async def get_decision_memory(operator_id: str):
 async def get_similar_trajectories(operator_id: str):
     """Retrieve historical decision memories matching current operational context signature."""
     return operations_service.get_similar_trajectories(operator_id)
+
+
+@router.get(
+    "/voice-briefing/{operator_id}",
+    summary="Get Spoken Operations Briefing",
+    description="Generate a natural-language radio dispatch operations briefing for the in-cab audio assistant.",
+)
+async def get_operations_voice_briefing(operator_id: str) -> dict:
+    """Generate concise spoken radio briefing of haul fleet, digging pace, and tactical options."""
+    twin = operations_service.get_shift_twin(operator_id)
+    pace = twin.productivity.pace_percentage
+    vol = twin.productivity.completed_volume_tons
+    target = twin.productivity.target_volume_tons
+    attention_mode = twin.attention_mode
+
+    if attention_mode == "DECISION_FOCUS":
+        return {
+            "operator_id": operator_id,
+            "status": "DECISION_REQUIRED",
+            "spoken_briefing": "Tactical Advisory: Haul trucks are delayed at the primary crusher queue. Crusher bottleneck creates a 17-minute delay risk. Rain front arriving in 20 minutes. I recommend resequencing excavation to Bench 3 to save 17 minutes and 14.8 liters of idle fuel.",
+            "recommended_action": "RESEQUENCE_BENCH_3",
+            "audio_priority": "HIGH",
+        }
+    return {
+        "operator_id": operator_id,
+        "status": "NOMINAL",
+        "spoken_briefing": f"Digging pace is optimal at {pace}% of target. You have excavated {vol} of {target} tons. Truck 02 is on approach with 4 active haulers in the cycle. Next handoff estimated on schedule.",
+        "audio_priority": "NORMAL",
+    }
+

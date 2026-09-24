@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VoiceDispatchSchema",
+  "description": "Standardized schema for in-cab voice commands, intent parsing, and spoken radio responses across the CAT Shift Twin monorepo.",
+  "type": "object",
+  "properties": {
+    "command_id": { "type": "string" },
+    "operator_id": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "query_text": { "type": "string" },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "QUERY_FLEET_STATUS",
+        "QUERY_SAFETY_STATUS",
+        "QUERY_PACE_TONNAGE",
+        "QUERY_RECOMMENDATION",
+        "EXECUTE_TRAJECTORY_CHOICE",
+        "SWITCH_DISPLAY_MODE",
+        "QUERY_WEATHER",
+        "UNKNOWN"
+      ]
+    },
+    "spoken_response": { "type": "string" },
+    "action_taken": { "type": ["string", "null"] },
+    "action_status": {
+      "type": "string",
+      "enum": ["SUCCESS", "NO_ACTION", "ERROR"]
+    },
+    "audio_priority": {
+      "type": "string",
+      "enum": ["LOW", "NORMAL", "HIGH", "CRITICAL"]
+    }
+  },
+  "required": ["command_id", "operator_id", "query_text", "intent", "spoken_response", "audio_priority", "timestamp"]
+}

@@ -163,8 +163,8 @@ export const App: React.FC = () => {
 
   const handleChooseTrajectory = async (
     scenarioId: string,
-    reason: string,
-    reasonCategory: string
+    reason: string = 'Voice command committed optimal recovery trajectory.',
+    reasonCategory: string = 'schedule'
   ) => {
     // Optimistic choice recording
     const chosenDemo = getFallbackDemoState(7, scenarioId);
@@ -220,6 +220,7 @@ export const App: React.FC = () => {
                   dashboard={dashboard}
                   demoState={demoState}
                   loading={loading}
+                  onChooseTrajectory={handleChooseTrajectory}
                 />
               }
             />
@@ -230,6 +231,7 @@ export const App: React.FC = () => {
                   dashboard={dashboard}
                   demoState={demoState}
                   loading={loading}
+                  onChooseTrajectory={handleChooseTrajectory}
                 />
               }
             />

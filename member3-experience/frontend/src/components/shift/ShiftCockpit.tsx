@@ -25,14 +25,21 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { DashboardResponse, DemoState } from '../../types';
+import { CabVoiceAssistant } from '../voice/CabVoiceAssistant';
 
 interface ShiftCockpitProps {
   dashboard: DashboardResponse | null;
   demoState: DemoState | null;
   loading?: boolean;
+  onChooseTrajectory?: (scenarioId: string, reason?: string, reasonCategory?: string) => void;
 }
 
-export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({ dashboard, demoState, loading }) => {
+export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({
+  dashboard,
+  demoState,
+  loading,
+  onChooseTrajectory,
+}) => {
   const navigate = useNavigate();
 
   const twin = dashboard?.shift_twin_summary;
@@ -89,6 +96,16 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({ dashboard, demoState
           <span>Zero screen interaction required while operating joysticks</span>
         </div>
       </div>
+
+      {/* CAT In-Cab Voice Assistant (Hands-Free Radio Companion) */}
+      <CabVoiceAssistant
+        dashboard={dashboard}
+        demoState={demoState}
+        onChooseTrajectory={onChooseTrajectory ? (id) => onChooseTrajectory(id) : undefined}
+        onViewModeChange={setViewMode}
+        currentViewMode={viewMode}
+      />
+
 
       {/* CAB HUD MODE (Glanceable, Low-Stress In-Cab Display) */}
       {viewMode === 'CAB_HUD' && (

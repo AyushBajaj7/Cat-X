@@ -143,3 +143,34 @@ async def get_active_constraints(operator_id: str) -> List[ConstraintSignal]:
     """Retrieve active trajectory constraint signals emitted for an operator."""
     status_obj = safety_service.get_status(operator_id)
     return status_obj.active_constraints
+
+
+@router.get(
+    "/voice-briefing/{operator_id}",
+    summary="Get Spoken Safety Briefing",
+    description="Generate a natural-language radio dispatch safety briefing for the in-cab audio assistant.",
+)
+async def get_safety_voice_briefing(operator_id: str) -> dict:
+    """Generate concise spoken radio briefing of current safety conditions."""
+    status_obj = safety_service.get_status(operator_id)
+    if not status_obj.seatbelt_fastened:
+        return {
+            "operator_id": operator_id,
+            "status": "UNSAFE",
+            "spoken_briefing": "Critical Safety Alert: Seatbelt unbuckled. Hydraulic lockout armed. Fasten harness before operating implements.",
+            "audio_priority": "CRITICAL",
+        }
+    if status_obj.active_hazard_count > 0:
+        return {
+            "operator_id": operator_id,
+            "status": "WARNING",
+            "spoken_briefing": f"Proximity Warning: {status_obj.active_hazard_count} active hazard detected in your 15-meter counterweight swing zone. Halt boom slew immediately.",
+            "audio_priority": "HIGH",
+        }
+    return {
+        "operator_id": operator_id,
+        "status": "SAFE",
+        "spoken_briefing": f"Cab safety perimeter is 100% clear. Zero proximity hazards. Harness latched with {status_obj.seatbelt_compliance_pct}% compliance streak. Highwall geotechnical slope is stable.",
+        "audio_priority": "NORMAL",
+    }
+
