@@ -147,7 +147,7 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
 
         {/* Navigation Bar */}
         <div className="border-t border-[#242424] bg-[#1A1A1A] px-4">
-          <nav className="max-w-7xl mx-auto flex items-center space-x-1 overflow-x-auto py-1 text-xs">
+          <nav className="max-w-7xl mx-auto flex items-center space-x-1 overflow-x-auto py-1 text-xs no-scrollbar">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
