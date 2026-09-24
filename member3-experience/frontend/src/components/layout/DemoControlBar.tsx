@@ -45,7 +45,7 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
         </div>
 
         {/* Step selector pills */}
-        <div className="flex items-center space-x-1.5 overflow-x-auto py-1">
+        <div className="flex items-center flex-wrap gap-1.5 py-1">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider hidden lg:inline mr-1">
             Jump Shift Event:
           </span>

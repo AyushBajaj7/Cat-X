@@ -76,15 +76,15 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
   const badge = getAttentionBadge(attentionMode);
 
   const navItems = [
-    { to: '/shift', label: 'Shift Cockpit (All-in-One HUD)', icon: <Activity className="w-4 h-4" /> },
-    { to: '/trajectory', label: 'CAT Trajectory & Consequence DAG', icon: <Compass className="w-4 h-4 text-[#FFCD11]" />, highlight: true },
-    { to: '/what-if', label: 'What-If Simulator', icon: <Sliders className="w-4 h-4" /> },
-    { to: '/decisions', label: 'Decision Memory', icon: <Compass className="w-4 h-4" /> },
-    { to: '/tasks', label: 'Tasks', icon: <CheckSquare className="w-4 h-4" /> },
-    { to: '/safety', label: 'Safety Audit', icon: <Shield className="w-4 h-4" /> },
-    { to: '/machine', label: 'Machine Telematics', icon: <Cpu className="w-4 h-4" /> },
-    { to: '/insights', label: 'Twin State', icon: <Brain className="w-4 h-4" /> },
-    { to: '/training', label: 'Training Hub', icon: <BookOpen className="w-4 h-4" /> },
+    { to: '/shift', label: 'Shift Cockpit', title: 'Shift Cockpit (All-in-One In-Cab HUD)', icon: <Activity className="w-3.5 h-3.5" /> },
+    { to: '/trajectory', label: 'Trajectory DAG', title: 'CAT Trajectory & Consequence DAG', icon: <Compass className="w-3.5 h-3.5 text-[#FFCD11]" />, highlight: true },
+    { to: '/what-if', label: 'What-If', title: 'What-If Operational Simulator', icon: <Sliders className="w-3.5 h-3.5" /> },
+    { to: '/decisions', label: 'Decisions', title: 'Historical Decision Memory & Precedents', icon: <Compass className="w-3.5 h-3.5" /> },
+    { to: '/tasks', label: 'Tasks', title: 'Operator Shift Tasks & Production Tonnage', icon: <CheckSquare className="w-3.5 h-3.5" /> },
+    { to: '/safety', label: 'Safety', title: 'Real-Time Safety Audit & Perimeter Zones', icon: <Shield className="w-3.5 h-3.5" /> },
+    { to: '/machine', label: 'Machine', title: 'Machine Telematics & Hydraulic Pressures', icon: <Cpu className="w-3.5 h-3.5" /> },
+    { to: '/insights', label: 'Twin State', title: 'Digital Twin Context & Attention Modes', icon: <Brain className="w-3.5 h-3.5" /> },
+    { to: '/training', label: 'Training Hub', title: 'Operator Training Hub & Micro-Learning', icon: <BookOpen className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -145,19 +145,20 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation Bar */}
-        <div className="border-t border-[#242424] bg-[#1A1A1A] px-4">
-          <nav className="max-w-7xl mx-auto flex items-center space-x-1 overflow-x-auto py-1 text-xs no-scrollbar">
+        {/* Navigation Bar - Responsive & Compact so all 9 buttons fit cleanly */}
+        <div className="border-t border-[#242424] bg-[#1A1A1A] px-3 sm:px-4 py-1.5">
+          <nav className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-1 text-xs">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
+                title={item.title}
                 className={({ isActive }: { isActive: boolean }) =>
-                  `flex items-center space-x-1.5 px-3 py-2 rounded-md font-bold transition whitespace-nowrap ${
+                  `flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap text-xs ${
                     isActive
-                      ? 'bg-[#FFCD11] text-[#111111] shadow'
+                      ? 'bg-[#FFCD11] text-[#111111] shadow-md font-black'
                       : item.highlight
-                      ? 'text-[#FFCD11] hover:bg-[#282828]'
+                      ? 'text-[#FFCD11] hover:bg-[#282828] bg-[#221C06]/40 border border-[#FFCD11]/30'
                       : 'text-gray-300 hover:text-white hover:bg-[#252525]'
                   }`
                 }
