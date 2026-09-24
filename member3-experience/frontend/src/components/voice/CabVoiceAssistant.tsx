@@ -99,7 +99,7 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
   const prevStepRef = useRef<number>(demoState?.current_step || 1);
   const prevAttentionModeRef = useRef<string>(dashboard?.attention_mode || 'NORMAL');
 
-  // Text-to-Speech synthesis
+  // Text-to-Speech synthesis (Warm, authoritative radio voice with emotional depth)
   const speak = useCallback(
     (text: string, isAlert: boolean = false) => {
       if (!voiceAudioEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -113,8 +113,9 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
           playRadioSound('CONFIRM');
         }
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.03; // Crisp, clear dispatch pace
-        utterance.pitch = 0.95; // Calm, authoritative radio tone
+        utterance.rate = 1.03; // Natural, measured dispatch pace
+        utterance.pitch = 0.95; // Warm, calm, authoritative radio tone with depth
+
         utterance.onstart = () => setIsSpeaking(true);
         utterance.onend = () => {
           setIsSpeaking(false);

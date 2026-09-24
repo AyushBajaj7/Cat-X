@@ -74,7 +74,7 @@ Cat-X/
 | Route | View | Description |
 | :--- | :--- | :--- |
 | `/` | Shift Cockpit | Primary operational screen: 7-dimension twin, next-best-action, 5 core capabilities |
-| `/shift` | Shift Cockpit | Direct alias to Shift Cockpit |
+| `/shift` | Shift Cockpit | Direct alias to Shift Cockpit (with CAB HUD vs DETAILED AUDIT toggle) |
 | `/trajectory` | CAT Trajectory | Decision point detection, multi-scenario comparison, consequence DAG, choice commit |
 | `/tasks` | Daily Tasks | Earthmoving assignments, material targets, and probabilistic completion intervals |
 | `/safety` | Real-Time Safety | Seatbelt compliance, active hazard alerts, incident logs, behavior signals |
@@ -84,6 +84,15 @@ Cat-X/
 | `/what-if` | What-If Simulator | Parameter exploration (weather, operator skill, idle reduction, machine age) |
 | `/training` | Training Hub | Contextually recommended modules, catalog, and procedural proficiency tracking |
 | `/training/:moduleId` | Scenario Player | Step-by-step interactive simulator with instant feedback and deterministic scoring |
+
+### In-Cab Voice Companion & Ergonomic Cockpit
+- **Dual Cockpit Ergonomics**:
+  - `CAB HUD`: Hands-free high-visibility view for active digging. Only 3 glanceable indicators (Perimeter, Harness, Fleet Cycle).
+  - `DETAILED AUDIT`: Comprehensive technical telemetry for shift handoffs and supervisor reviews.
+- **Joystick Push-to-Talk (PTT)**: Hold `Spacebar` (or joystick trigger) to speak, eliminating false alarms from 85 dBA engine noise.
+- **Pure Web Audio Synthesizer**: Oscillator-generated radio squelches and mic-open chirps (`PTT_ON`, `PTT_OFF`, `ALERT`, `CONFIRM`) with zero asset download overhead.
+- **Natural Radio Voice**: Warm, measured authoritative voice (rate 1.03, pitch 0.95) with natural presence and emotional depth.
+- **V2V Fleet Telemetry**: Tracks the single cab machine (`EXC-CAT-349D`) and 4 haul fleet cycle trucks, providing early bottleneck warnings before delays occur.
 
 ---
 
