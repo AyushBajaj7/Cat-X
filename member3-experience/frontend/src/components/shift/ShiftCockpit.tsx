@@ -11,6 +11,10 @@ import {
   Activity,
   CheckCircle2,
   BookOpen,
+  Sliders,
+  HelpCircle,
+  Layers,
+  ArrowUpRight,
 } from 'lucide-react';
 import { DashboardResponse, DemoState } from '../../types';
 
@@ -220,6 +224,121 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({ dashboard, demoState
           </div>
         </section>
       )}
+
+      {/* Consolidated Outcome Info Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2A2A2A] text-xs">
+        <div className="flex items-center space-x-2 text-gray-300">
+          <Layers className="w-4 h-4 text-[#FFCD11]" />
+          <span>
+            <strong>Consolidated Shift Outcome:</strong> Live synthesis of Safety (:8001), Operations (:8002), and Training (:8003). <em>No tab switching needed during digging.</em>
+          </span>
+        </div>
+        <div className="flex items-center space-x-3 text-gray-400 font-mono text-[11px]">
+          <span>Shift Health: <strong className="text-white">{twin?.shift_health_score ?? 95.5}%</strong></span>
+          <span>•</span>
+          <span>Finish: <strong className="text-[#FFCD11]">{twin?.prediction.estimated_remaining_minutes || 145}m</strong></span>
+        </div>
+      </div>
+
+      {/* Operator Action Center — "What changes can I make right now?" */}
+      <section className="bg-gradient-to-br from-[#1C1C1C] via-[#202020] to-[#181818] border border-[#333333] rounded-xl p-5 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <span className="p-1.5 rounded-lg bg-[#FFCD11]/20 text-[#FFCD11]">
+              <Compass className="w-4 h-4" />
+            </span>
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-tight">Operator Action Center</h3>
+              <p className="text-[11px] text-gray-400">Direct interventions and simulation controls available to you</p>
+            </div>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 font-bold uppercase">
+            OPERATOR IN CONTROL
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Action 1: Trajectory */}
+          <button
+            type="button"
+            onClick={() => navigate('/trajectory')}
+            className="flex flex-col justify-between p-3.5 rounded-xl bg-[#262626] hover:bg-[#2E2E2E] border border-[#383838] hover:border-[#FFCD11] transition text-left group cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="flex items-center justify-between text-[#FFCD11] mb-1 font-bold text-xs">
+                <span>1. Choose Trajectory</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+              </div>
+              <p className="text-[11px] text-gray-300 leading-snug">
+                Compare 4 digging sequences (e.g. Resequence to Bench 3 to bypass haul fleet queue).
+              </p>
+            </div>
+            <span className="mt-3 text-[10px] font-black uppercase text-[#FFCD11] tracking-wider">
+              Inspect Trajectories →
+            </span>
+          </button>
+
+          {/* Action 2: What-If */}
+          <button
+            type="button"
+            onClick={() => navigate('/what-if')}
+            className="flex flex-col justify-between p-3.5 rounded-xl bg-[#262626] hover:bg-[#2E2E2E] border border-[#383838] hover:border-sky-400 transition text-left group cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="flex items-center justify-between text-sky-400 mb-1 font-bold text-xs">
+                <span>2. Simulate What-If</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+              </div>
+              <p className="text-[11px] text-gray-300 leading-snug">
+                Tune target pace, swing arc angles, and haul truck return intervals in real-time.
+              </p>
+            </div>
+            <span className="mt-3 text-[10px] font-black uppercase text-sky-400 tracking-wider">
+              Launch Simulator →
+            </span>
+          </button>
+
+          {/* Action 3: Safety Radar */}
+          <button
+            type="button"
+            onClick={() => navigate('/safety')}
+            className="flex flex-col justify-between p-3.5 rounded-xl bg-[#262626] hover:bg-[#2E2E2E] border border-[#383838] hover:border-rose-400 transition text-left group cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="flex items-center justify-between text-rose-400 mb-1 font-bold text-xs">
+                <span>3. Safety & Proximity</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+              </div>
+              <p className="text-[11px] text-gray-300 leading-snug">
+                Review 15m proximity radar, highwall stability grade, and seatbelt harness compliance.
+              </p>
+            </div>
+            <span className="mt-3 text-[10px] font-black uppercase text-rose-400 tracking-wider">
+              Inspect Safety Radar →
+            </span>
+          </button>
+
+          {/* Action 4: Training Hub */}
+          <button
+            type="button"
+            onClick={() => navigate('/training')}
+            className="flex flex-col justify-between p-3.5 rounded-xl bg-[#262626] hover:bg-[#2E2E2E] border border-[#383838] hover:border-purple-400 transition text-left group cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="flex items-center justify-between text-purple-400 mb-1 font-bold text-xs">
+                <span>4. In-Cab Micro-Learning</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+              </div>
+              <p className="text-[11px] text-gray-300 leading-snug">
+                Interactive 2-minute decision coaching scenario triggered by live context signals.
+              </p>
+            </div>
+            <span className="mt-3 text-[10px] font-black uppercase text-purple-400 tracking-wider">
+              Open Training Hub →
+            </span>
+          </button>
+        </div>
+      </section>
 
       {/* Main Cockpit Operational Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
