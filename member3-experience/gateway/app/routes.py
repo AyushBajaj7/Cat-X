@@ -52,8 +52,8 @@ async def get_operator_dashboard(operator_id: str):
         "immediate_safety_status": safety,
         "top_training_recommendation": recommendations[0] if recommendations else None,
         "active_alerts_count": safety.get("active_hazard_count", 0),
-        "attention_mode": twin.get("attention_mode", demo_info.get("attention_mode", "NORMAL")),
-        "attention_reason": twin.get("attention_reason", demo_info.get("attention_reason", "Nominal operating parameters.")),
+        "attention_mode": demo_info.get("attention_mode") if demo_engine.current_step > 1 else twin.get("attention_mode", "NORMAL"),
+        "attention_reason": demo_info.get("attention_reason") if demo_engine.current_step > 1 else twin.get("attention_reason", "Nominal operating parameters."),
         "active_decision_point": demo_info.get("decision_point"),
         "trajectory_card": {
             "scenarios_count": len(demo_info.get("scenarios", [])),

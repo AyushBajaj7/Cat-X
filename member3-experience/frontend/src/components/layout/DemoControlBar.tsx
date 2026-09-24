@@ -45,7 +45,10 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
         </div>
 
         {/* Step selector pills */}
-        <div className="flex items-center space-x-1 overflow-x-auto py-1">
+        <div className="flex items-center space-x-1.5 overflow-x-auto py-1">
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider hidden lg:inline mr-1">
+            Jump Shift Event:
+          </span>
           {stepsList.map((s) => {
             const isActive = s.num === currentStep;
             const isCompleted = s.num < currentStep;
@@ -55,16 +58,20 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
                 type="button"
                 onClick={() => onStepChange(s.num)}
                 title={`Jump to Step ${s.num}: ${s.label}`}
-                className={`px-2.5 py-1 rounded text-xs font-semibold transition cursor-pointer select-none flex items-center space-x-1 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none flex items-center space-x-1.5 border ${
                   isActive
-                    ? 'bg-[#FFCD11] text-[#111111] shadow-md font-bold scale-105 ring-1 ring-[#FFCD11]'
+                    ? 'bg-[#FFCD11] border-[#FFCD11] text-[#111111] shadow-lg font-black scale-105 ring-2 ring-[#FFCD11]/50'
                     : isCompleted
-                    ? 'bg-[#2A2A2A] text-gray-300 hover:bg-[#383838] hover:text-white'
-                    : 'bg-[#1C1C1C] text-gray-500 hover:text-gray-200 hover:bg-[#252525]'
+                    ? 'bg-[#252525] border-[#3E3E3E] text-gray-200 hover:bg-[#333333] hover:border-[#FFCD11]/60 hover:text-white'
+                    : 'bg-[#1E1E1E] border-[#333333] text-gray-300 hover:bg-[#2A2A2A] hover:border-[#FFCD11]/60 hover:text-white'
                 }`}
               >
-                <span>{s.num}.</span>
-                <span className="hidden md:inline">{s.label}</span>
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-black ${
+                  isActive ? 'bg-black text-[#FFCD11]' : 'bg-[#2A2A2A] text-gray-300'
+                }`}>
+                  {s.num}
+                </span>
+                <span className="whitespace-nowrap">{s.label}</span>
               </button>
             );
           })}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Shield,
@@ -15,6 +15,14 @@ import {
   HelpCircle,
   Layers,
   ArrowUpRight,
+  Eye,
+  LayoutGrid,
+  Truck,
+  Check,
+  Volume2,
+  Radio,
+  Gauge,
+  CheckCircle,
 } from 'lucide-react';
 import { DashboardResponse, DemoState } from '../../types';
 
@@ -41,8 +49,242 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({ dashboard, demoState
   const isPlanningFocus = attentionMode === 'PLANNING_FOCUS';
   const isTrainingFocus = attentionMode === 'TRAINING_FOCUS';
 
+  const [viewMode, setViewMode] = useState<'CAB_HUD' | 'DETAILED'>('CAB_HUD');
+
   return (
     <div className="space-y-6">
+      {/* Cockpit Mode Switcher Header */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#1B1B1B] border border-[#2E2E2E] p-2.5 rounded-xl shadow-md">
+        <div className="flex items-center space-x-2.5">
+          <span className="text-[11px] font-black text-[#FFCD11] uppercase tracking-wider">In-Cab Mode:</span>
+          <div className="flex items-center p-1 bg-black/60 rounded-lg border border-[#333333]">
+            <button
+              type="button"
+              onClick={() => setViewMode('CAB_HUD')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-black transition cursor-pointer ${
+                viewMode === 'CAB_HUD'
+                  ? 'bg-[#FFCD11] text-black shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>CAB HUD (Hands-Free Active Digging)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('DETAILED')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-black transition cursor-pointer ${
+                viewMode === 'DETAILED'
+                  ? 'bg-[#FFCD11] text-black shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>DETAILED AUDIT (Break & Pre-Shift)</span>
+            </button>
+          </div>
+        </div>
+        <div className="text-[11px] text-gray-400 flex items-center space-x-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1"></span>
+          <span>Zero screen interaction required while operating joysticks</span>
+        </div>
+      </div>
+
+      {/* CAB HUD MODE (Glanceable, Low-Stress In-Cab Display) */}
+      {viewMode === 'CAB_HUD' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* 1. Giant Cab Status Hero Display (Glanceable in 0.1s) */}
+          <div
+            className={`p-6 sm:p-8 rounded-2xl border-2 shadow-2xl transition-all ${
+              isSafetyFocus
+                ? 'bg-rose-950/80 border-rose-500 text-white animate-pulse'
+                : isDecisionFocus
+                ? 'bg-[#241A05] border-[#FFCD11] text-white'
+                : 'bg-[#121A14] border-emerald-500/80 text-white'
+            }`}
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-start sm:items-center space-x-5">
+                <div
+                  className={`p-4 rounded-2xl ${
+                    isSafetyFocus
+                      ? 'bg-rose-600/30 text-rose-400'
+                      : isDecisionFocus
+                      ? 'bg-[#FFCD11]/20 text-[#FFCD11]'
+                      : 'bg-emerald-500/20 text-emerald-400'
+                  }`}
+                >
+                  {isSafetyFocus ? (
+                    <AlertTriangle className="w-12 h-12" />
+                  ) : isDecisionFocus ? (
+                    <Compass className="w-12 h-12 animate-spin-slow" />
+                  ) : (
+                    <CheckCircle className="w-12 h-12" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded ${
+                        isSafetyFocus
+                          ? 'bg-rose-500 text-black font-black'
+                          : isDecisionFocus
+                          ? 'bg-[#FFCD11] text-black font-black'
+                          : 'bg-emerald-500 text-black font-black'
+                      }`}
+                    >
+                      {isSafetyFocus
+                        ? 'CRITICAL SAFETY INTERLOCK'
+                        : isDecisionFocus
+                        ? 'TACTICAL RECOVERY RECOMMENDED'
+                        : 'ALL CLEAR • NOMINAL DIGGING'}
+                    </span>
+                    <span className="text-xs text-gray-400">• Autonomous Telemetry Live</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                    {isSafetyFocus
+                      ? safety?.seatbelt_fastened === false
+                        ? 'SEATBELT UNFASTENED — HYDRAULIC HOLD'
+                        : 'PROXIMITY WARNING — OBJECT IN 15M BUFFER'
+                      : isDecisionFocus
+                      ? 'HAUL BOTTLENECK: 17-MINUTE TRAP DETECTED'
+                      : 'ALL CLEAR: BENCH 2 TRENCHING IN PROGRESS'}
+                  </h2>
+                  <p className="text-sm sm:text-base text-gray-300 max-w-2xl leading-relaxed">
+                    {isSafetyFocus
+                      ? safety?.seatbelt_fastened === false
+                        ? 'Fasten cab harness buckle immediately to re-enable implement controls.'
+                        : 'Service vehicle / personnel inside 15m counterweight swing zone. Halt boom slew.'
+                      : isDecisionFocus
+                      ? 'Haul trucks queued at primary crusher + incoming rain front. Resequencing to Bench 3 saves 17 minutes and 14.8L fuel.'
+                      : 'Hydraulics armed • Seatbelt 100% compliant • Swing perimeter 15m clear • Pace 104.5% on target.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Glove-friendly Touch Action */}
+              {isDecisionFocus && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/trajectory')}
+                  className="px-6 py-4 rounded-xl bg-[#FFCD11] hover:bg-[#E0A800] text-black font-black text-sm uppercase tracking-wider shadow-2xl transition transform hover:scale-105 flex items-center justify-center space-x-2 whitespace-nowrap cursor-pointer"
+                >
+                  <Compass className="w-5 h-5 text-black" />
+                  <span>Choose Bench 3 Path →</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 2. Three Giant Glanceable Glancemeters (0.2s Glance) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Meter 1: Safety Radar */}
+            <div
+              className={`p-5 rounded-xl border flex flex-col justify-between ${
+                safety?.seatbelt_fastened === false || (safety?.active_hazard_count || 0) > 0
+                  ? 'bg-rose-950/40 border-rose-600'
+                  : 'bg-[#181818] border-[#2A2A2A]'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">1. Safety Perimeter</span>
+                <Shield
+                  className={`w-5 h-5 ${
+                    safety?.seatbelt_fastened === false || (safety?.active_hazard_count || 0) > 0
+                      ? 'text-rose-400'
+                      : 'text-emerald-400'
+                  }`}
+                />
+              </div>
+              <div
+                className={`text-2xl font-black ${
+                  safety?.active_hazard_count && safety.active_hazard_count > 0 ? 'text-rose-400' : 'text-emerald-400'
+                }`}
+              >
+                {safety?.active_hazard_count && safety.active_hazard_count > 0 ? 'HAZARD AT 11M' : '15m ZONE CLEAR'}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                LiDAR 360° radar active • Highwall grade: <strong className="text-white">8° safe</strong>
+              </div>
+            </div>
+
+            {/* Meter 2: Harness & Interlock */}
+            <div
+              className={`p-5 rounded-xl border flex flex-col justify-between ${
+                safety?.seatbelt_fastened === false ? 'bg-rose-950/40 border-rose-600' : 'bg-[#181818] border-[#2A2A2A]'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">2. Harness Interlock</span>
+                <Activity
+                  className={`w-5 h-5 ${
+                    safety?.seatbelt_fastened === false ? 'text-rose-400' : 'text-emerald-400'
+                  }`}
+                />
+              </div>
+              <div
+                className={`text-2xl font-black ${
+                  safety?.seatbelt_fastened === false ? 'text-rose-400' : 'text-emerald-400'
+                }`}
+              >
+                {safety?.seatbelt_fastened === false ? 'DISENGAGED' : 'FASTENED (100%)'}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                Hydraulic lockout:{' '}
+                <strong className={safety?.seatbelt_fastened === false ? 'text-rose-400' : 'text-emerald-400'}>
+                  {safety?.seatbelt_fastened === false ? 'ENGAGED' : 'ARMED & READY'}
+                </strong>
+              </div>
+            </div>
+
+            {/* Meter 3: Haul Fleet & Pace */}
+            <div className="p-5 rounded-xl border border-[#2A2A2A] bg-[#181818] flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">3. Haul Fleet Cycle</span>
+                <Truck className="w-5 h-5 text-sky-400" />
+              </div>
+              <div className="text-2xl font-black text-white">
+                {isDecisionFocus ? 'TRUCKS DELAYED (17M)' : 'TRUCK 02 ON APPROACH'}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                Pacing: <strong className="text-[#FFCD11]">104.5%</strong> • Shift Excavated:{' '}
+                <strong className="text-white">320 / 850 t</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. In-Cab Ergonomics Guarantee & Low-Stress Reassurance */}
+          <div className="p-5 rounded-xl bg-[#1C1C1C] border border-[#2F2F2F] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3.5">
+              <div className="p-2.5 rounded-xl bg-[#FFCD11]/10 text-[#FFCD11]">
+                <Radio className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white uppercase tracking-tight">
+                  In-Cab Ergonomics Guarantee: 100% Passive Operation
+                </h4>
+                <p className="text-xs text-gray-400 leading-relaxed max-w-2xl mt-0.5">
+                  Operating a 50-ton machine requires full visual focus on the bench and haul trucks. You{' '}
+                  <strong className="text-white">never need to manage or tap this screen while digging</strong>. The digital
+                  twin silently logs telemetry and sounds distinct audio chimes only if a safety breach or recovery decision
+                  requires your attention.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setViewMode('DETAILED')}
+              className="px-4 py-2 rounded-lg bg-[#282828] hover:bg-[#333333] text-gray-200 hover:text-white border border-[#3E3E3E] text-xs font-bold transition whitespace-nowrap cursor-pointer"
+            >
+              Open Detailed Analytics →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* DETAILED AUDIT MODE (Full 6 Diagnostic Cards, Consolidated Bar & Action Center) */}
+      {viewMode === 'DETAILED' && (
+        <div className="space-y-6 animate-fadeIn">
       {/* Dynamic Attention Alert Banner */}
       {attentionMode !== 'NORMAL' && (
         <div
@@ -564,7 +806,10 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({ dashboard, demoState
           </button>
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 };
+
 

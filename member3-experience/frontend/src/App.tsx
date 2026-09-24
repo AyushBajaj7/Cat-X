@@ -133,7 +133,6 @@ export const App: React.FC = () => {
       if (updated && updated.current_step === step) {
         setDemoState(updated);
       }
-      await loadData();
     } catch {
       // Offline / cold start tolerance — optimistic state remains active
     } finally {

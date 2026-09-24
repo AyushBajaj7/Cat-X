@@ -88,7 +88,9 @@ class ServiceClients:
         }
 
     async def get_shift_twin(self, operator_id: str) -> Dict[str, Any]:
-        """Fetch canonical Shift Twin from operations service, or demo state if offline."""
+        """Fetch canonical Shift Twin from operations service, or demo state if offline or active demo step."""
+        if demo_engine.current_step > 1:
+            return demo_engine.get_shift_twin(operator_id)
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
                 resp = await client.get(f"{settings.operations_service_url}/api/v1/operator/{operator_id}/shift-twin")
