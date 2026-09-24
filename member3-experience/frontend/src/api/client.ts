@@ -22,7 +22,24 @@ import {
   WhatIfResult,
 } from '../types';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const getApiBaseUrl = (): string => {
+  const envUrl = (import.meta as any).env?.VITE_API_BASE_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.startsWith('http')) {
+    return envUrl;
+  }
+  // If hosted on Render, Vercel, or any remote domain, point to the live Render gateway
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
+    return 'https://cat-gateway.onrender.com/api/v1';
+  }
+  // Local development fallback
+  return 'http://localhost:8080/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const controller = new AbortController();

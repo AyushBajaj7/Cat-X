@@ -52,15 +52,15 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
             return (
               <button
                 key={s.num}
+                type="button"
                 onClick={() => onStepChange(s.num)}
-                disabled={loading}
                 title={`Jump to Step ${s.num}: ${s.label}`}
-                className={`px-2 py-1 rounded text-xs font-semibold transition flex items-center space-x-1 ${
+                className={`px-2.5 py-1 rounded text-xs font-semibold transition cursor-pointer select-none flex items-center space-x-1 ${
                   isActive
-                    ? 'bg-[#FFCD11] text-[#111111] shadow-sm font-bold scale-105'
+                    ? 'bg-[#FFCD11] text-[#111111] shadow-md font-bold scale-105 ring-1 ring-[#FFCD11]'
                     : isCompleted
-                    ? 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
-                    : 'bg-[#1C1C1C] text-gray-500 hover:text-gray-300'
+                    ? 'bg-[#2A2A2A] text-gray-300 hover:bg-[#383838] hover:text-white'
+                    : 'bg-[#1C1C1C] text-gray-500 hover:text-gray-200 hover:bg-[#252525]'
                 }`}
               >
                 <span>{s.num}.</span>
@@ -72,27 +72,34 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
 
         {/* Controls: Prev / Next / Reset */}
         <div className="flex items-center space-x-2">
+          {loading && (
+            <span className="text-[10px] text-[#FFCD11] animate-pulse hidden lg:inline mr-1 font-mono">
+              ● syncing
+            </span>
+          )}
           <button
+            type="button"
             onClick={() => onStepChange(Math.max(1, currentStep - 1))}
-            disabled={currentStep <= 1 || loading}
-            className="p-1.5 rounded bg-[#2A2A2A] hover:bg-[#333333] text-gray-200 disabled:opacity-40 transition"
+            disabled={currentStep <= 1}
+            className="p-1.5 rounded bg-[#2A2A2A] hover:bg-[#333333] text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
             title="Previous Step"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
+            type="button"
             onClick={() => onStepChange(Math.min(10, currentStep + 1))}
-            disabled={currentStep >= 10 || loading}
-            className="flex items-center space-x-1 px-2.5 py-1.5 rounded bg-[#FFCD11] hover:bg-[#E0A800] text-[#111111] font-bold disabled:opacity-40 transition"
+            disabled={currentStep >= 10}
+            className="flex items-center space-x-1 px-3 py-1.5 rounded bg-[#FFCD11] hover:bg-[#E0A800] text-[#111111] font-bold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shadow transition"
             title="Advance to Next Step"
           >
             <span>Next</span>
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
+            type="button"
             onClick={onReset}
-            disabled={loading}
-            className="flex items-center space-x-1 px-2.5 py-1.5 rounded bg-[#2A2A2A] hover:bg-rose-900/50 hover:text-rose-300 text-gray-300 border border-[#3A3A3A] font-semibold transition"
+            className="flex items-center space-x-1 px-2.5 py-1.5 rounded bg-[#2A2A2A] hover:bg-rose-900/50 hover:text-rose-300 text-gray-300 border border-[#3A3A3A] font-semibold cursor-pointer transition"
             title="Reset Scenario to Step 1"
           >
             <RotateCcw className="w-3.5 h-3.5" />

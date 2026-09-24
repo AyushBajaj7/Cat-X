@@ -37,22 +37,30 @@ import { MachineScreen } from './components/machine/MachineScreen';
 import { InsightsScreen } from './components/insights/InsightsScreen';
 import { TrajectoryScreen } from './components/trajectory/TrajectoryScreen';
 import { TrainingHubScreen } from './components/training/TrainingHubScreen';
+import {
+  getFallbackDemoState,
+  getFallbackDashboard,
+  getFallbackTasks,
+  getFallbackSafetyAlerts,
+  getFallbackDecisionMemories,
+  getFallbackSimilarContext,
+} from './api/demoFallback';
 import { TrainingScenarioPlayer } from './components/training/TrainingScenarioPlayer';
 import { DecisionMemoryScreen } from './components/decisions/DecisionMemoryScreen';
 import { WhatIfPage } from './pages/WhatIfPage';
 
 export const App: React.FC = () => {
-  const [demoState, setDemoState] = useState<DemoState | null>(null);
-  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [safety, setSafety] = useState<SafetyStatus | null>(null);
+  const [demoState, setDemoState] = useState<DemoState>(() => getFallbackDemoState(1));
+  const [dashboard, setDashboard] = useState<DashboardResponse>(() => getFallbackDashboard(1));
+  const [tasks, setTasks] = useState<Task[]>(() => getFallbackTasks());
+  const [safety, setSafety] = useState<SafetyStatus | null>(() => getFallbackDashboard(1).immediate_safety_status);
   const [alerts, setAlerts] = useState<SafetyAlert[]>([]);
   const [modules, setModules] = useState<TrainingModule[]>([]);
   const [recommendations, setRecommendations] = useState<TrainingRecommendation[]>([]);
   const [progress, setProgress] = useState<TrainingProgress | null>(null);
-  const [memories, setMemories] = useState<DecisionMemory[]>([]);
-  const [similarContext, setSimilarContext] = useState<SimilarContext | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [memories, setMemories] = useState<DecisionMemory[]>(() => getFallbackDecisionMemories());
+  const [similarContext, setSimilarContext] = useState<SimilarContext | null>(() => getFallbackSimilarContext());
+  const [loading, setLoading] = useState<boolean>(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -80,20 +88,20 @@ export const App: React.FC = () => {
         fetchSimilarTrajectories('OP1001'),
       ]);
 
-      if (demoRes.status === 'fulfilled') setDemoState(demoRes.value);
-      if (dashRes.status === 'fulfilled') setDashboard(dashRes.value);
-      if (tasksRes.status === 'fulfilled') setTasks(tasksRes.value);
-      if (safetyRes.status === 'fulfilled') setSafety(safetyRes.value);
-      if (alertsRes.status === 'fulfilled') setAlerts(alertsRes.value);
-      if (modRes.status === 'fulfilled') setModules(modRes.value);
-      if (recRes.status === 'fulfilled') setRecommendations(recRes.value);
-      if (progRes.status === 'fulfilled') setProgress(progRes.value);
-      if (memRes.status === 'fulfilled') setMemories(memRes.value);
-      if (simRes.status === 'fulfilled' && simRes.value.length > 0) {
+      if (demoRes.status === 'fulfilled' && demoRes.value) setDemoState(demoRes.value);
+      if (dashRes.status === 'fulfilled' && dashRes.value) setDashboard(dashRes.value);
+      if (tasksRes.status === 'fulfilled' && tasksRes.value?.length) setTasks(tasksRes.value);
+      if (safetyRes.status === 'fulfilled' && safetyRes.value) setSafety(safetyRes.value);
+      if (alertsRes.status === 'fulfilled' && alertsRes.value) setAlerts(alertsRes.value);
+      if (modRes.status === 'fulfilled' && modRes.value) setModules(modRes.value);
+      if (recRes.status === 'fulfilled' && recRes.value) setRecommendations(recRes.value);
+      if (progRes.status === 'fulfilled' && progRes.value) setProgress(progRes.value);
+      if (memRes.status === 'fulfilled' && memRes.value?.length) setMemories(memRes.value);
+      if (simRes.status === 'fulfilled' && simRes.value?.length > 0) {
         setSimilarContext(simRes.value[0]);
       }
     } catch {
-      // Degraded/offline fallback
+      // Degraded/offline fallback already initialized
     } finally {
       setLoading(false);
     }
@@ -104,25 +112,51 @@ export const App: React.FC = () => {
   }, [loadData]);
 
   const handleStepChange = async (step: number) => {
+    // 1. Instant optimistic update so UI transitions with 0ms lag
+    const optimisticDemo = getFallbackDemoState(step, demoState?.chosen_scenario || undefined);
+    setDemoState(optimisticDemo);
+    const optimisticDash = getFallbackDashboard(step, demoState?.chosen_scenario || undefined);
+    setDashboard(optimisticDash);
+    setSafety(optimisticDash.immediate_safety_status);
+    setAlerts(getFallbackSafetyAlerts(step));
+    if (step >= 7) {
+      setMemories(getFallbackDecisionMemories());
+    }
+    if (step === 10) {
+      setSimilarContext(getFallbackSimilarContext());
+    }
+
+    // 2. Background sync with live API Gateway
     try {
       setLoading(true);
       const updated = await setDemoStep(step);
-      setDemoState(updated);
+      if (updated && updated.current_step === step) {
+        setDemoState(updated);
+      }
       await loadData();
     } catch {
-      // Degraded fallback
+      // Offline / cold start tolerance — optimistic state remains active
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
+    // 1. Instant optimistic reset to Step 1
+    const resetDemoState = getFallbackDemoState(1);
+    setDemoState(resetDemoState);
+    const resetDash = getFallbackDashboard(1);
+    setDashboard(resetDash);
+    setSafety(resetDash.immediate_safety_status);
+    setAlerts([]);
+
+    // 2. Dispatch reset to backend
     try {
       setLoading(true);
       await resetDemo();
       await loadData();
     } catch {
-      // Degraded fallback
+      // Handled
     } finally {
       setLoading(false);
     }
@@ -133,6 +167,12 @@ export const App: React.FC = () => {
     reason: string,
     reasonCategory: string
   ) => {
+    // Optimistic choice recording
+    const chosenDemo = getFallbackDemoState(7, scenarioId);
+    chosenDemo.operator_reason = reason;
+    chosenDemo.reason_category = reasonCategory;
+    setDemoState(chosenDemo);
+
     try {
       setLoading(true);
       await chooseTrajectory({
