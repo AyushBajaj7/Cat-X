@@ -107,8 +107,8 @@ def build_shift_twin(
     actions = next_best_actions or [
         NextBestActionModel(
             action_id="NBA-01",
-            title="Maintain Digging Envelope",
-            rationale="Current cycle cadence is aligned with shift targets.",
+            title="Maintain Production Pace",
+            rationale="Current cycle speed is aligned with shift targets.",
             category="EFFICIENCY",
             priority="NORMAL",
             estimated_benefit="Keeps current schedule on track.",

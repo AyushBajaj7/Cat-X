@@ -255,11 +255,11 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
           priority = 'CRITICAL';
         } else if ((safety?.active_hazard_count || 0) > 0) {
           answer =
-            'Proximity Warning: Service vehicle detected at 11 meters inside your 15-meter counterweight swing zone. Halt boom slew immediately.';
+            'Proximity Warning: Support vehicle detected at 11 meters inside your 15-meter counterweight swing zone. Stop your swing immediately.';
           priority = 'CRITICAL';
         } else {
           answer =
-            'Cab safety perimeter is 100% clear. 0 proximity hazards. Harness latched. Highwall geotechnical slope is stable at 8 degrees, well under the 15 degree safety limit.';
+            'Cab safety perimeter is 100% clear. Zero proximity hazards. Harness latched. Bench slope is stable at 8 degrees, well under the 15-degree safety limit.';
           priority = 'NORMAL';
         }
       }
@@ -275,7 +275,10 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
         const pace = twin?.productivity?.pace_percentage || 104.5;
         const volume = twin?.productivity?.completed_volume_tons || 320;
         const target = twin?.productivity?.target_volume_tons || 850;
-        answer = `Current digging cadence is ${pace}% of target. You have excavated ${volume} of ${target} tons. Operating pace is optimal.`;
+        const progressPct = Math.round((volume / target) * 100);
+        const deltaPct = Math.round(pace - 100);
+        const speedText = deltaPct >= 0 ? `${deltaPct}% ahead of schedule` : `${Math.abs(deltaPct)}% behind schedule`;
+        answer = `You've loaded ${volume} of your ${target}-ton shift target (${progressPct}% complete). Digging speed is ${speedText}, running at ${pace}% of planned rate.`;
         priority = 'NORMAL';
       }
       // 4. Recommendation / What to do / Next Best Action
@@ -290,15 +293,19 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
       ) {
         if (isDecisionAlert) {
           answer =
-            'Tactical Advisory: Crusher queue creates a 17-minute trap. Say "Choose Bench 3" or tap the recovery button to resequence overburden stripping. This saves 17 minutes and 14.8 liters of idle fuel.';
+            'Tactical Advisory: Crusher queue creates a 17-minute delay before rain arrives. Say "Choose Bench 3" or tap the recovery button to resequence overburden. This saves 17 minutes and 14.8 liters of idle fuel.';
           priority = 'HIGH';
         } else if (isSafetyAlert) {
           answer =
             'Immediate safety action required: Fasten your cab harness and clear the 15-meter swing zone to restore full hydraulic power.';
           priority = 'CRITICAL';
         } else {
+          const pace = twin?.productivity?.pace_percentage || 104.5;
+          const deltaPct = Math.round(pace - 100);
+          const speedText = deltaPct >= 0 ? `${deltaPct}% ahead of schedule` : `${Math.abs(deltaPct)}% behind schedule`;
+          const remainingMins = twin?.prediction?.estimated_remaining_minutes || 145;
           answer =
-            'No intervention needed. Maintain current 104.5% trenching cadence. Estimated shift handoff on schedule at 145 minutes remaining.';
+            `No intervention needed. Maintain current digging speed, currently ${speedText}. Shift completion is on schedule with ${remainingMins} minutes remaining.`;
           priority = 'NORMAL';
         }
       }
@@ -313,7 +320,7 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
           onChooseTrajectory('SCEN-02-RESEQUENCE');
         }
         answer =
-          'Affirmative. Committed Bench 3 recovery sequence. Dispatch routing updated. Haul queue bypassed and 14.8 liters of fuel saved. Resuming nominal digging.';
+          'Affirmative. Committed Bench 3 recovery sequence. Dispatch routing updated. Haul queue bypassed and 14.8 liters of fuel saved. Resuming standard digging.';
         priority = 'HIGH';
       }
       // 6. View Mode Switch Commands
@@ -335,7 +342,7 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
       // 8. General Help
       else {
         answer =
-          `I heard "${query}". As your in-cab companion, you can ask me: "Where are the trucks?", "What should I do?", "Check safety status", or tell me "Choose Bench 3".`;
+          `I heard "${query}". As your in-cab companion, you can ask me: "Where are the trucks?", "What should I do?", "Check safety perimeter", "What is my target pace?", or tell me "Choose Bench 3 path".`;
         priority = 'NORMAL';
       }
 
@@ -476,22 +483,22 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
         speak(msg, 'CRITICAL', true);
       } else if (currentStep === 3) {
         const msg =
-          'Safety Alert: Object detected at 11 meters in rear swing radius. Halt boom slew.';
+          'Safety Alert: Object detected at 11 meters in rear swing radius. Stop swing immediately.';
         setLastResponse(msg);
         speak(msg, 'CRITICAL', true);
       } else if (currentStep === 4) {
         const msg =
-          'Engine Advisory: High idle at 1800 RPM detected while waiting. Throttle back to 1000 RPM to save fuel.';
+          'Engine Advisory: High idle at 1800 RPM detected while waiting for trucks. Throttle back to 1000 RPM to save fuel.';
         setLastResponse(msg);
         speak(msg, 'HIGH', true);
       } else if (currentStep === 5 || currentStep === 6) {
         const msg =
-          'Tactical Advisory: 17-Minute Trap ahead. Haul trucks delayed at crusher with approaching rain. Say "Choose Bench 3" or tap the recovery button.';
+          'Tactical Advisory: 17-minute delay ahead at crusher queue with incoming rain. Say "Choose Bench 3" or tap the recovery button.';
         setLastResponse(msg);
         speak(msg, 'HIGH', true);
       } else if (currentStep === 7) {
         const msg =
-          'Tactical Decision Logged: Bench 3 recovery committed. Haul bottleneck bypassed.';
+          'Tactical Decision Logged: Bench 3 recovery in progress. Haul bottleneck bypassed, digging speed running 18% ahead of schedule.';
         setLastResponse(msg);
         speak(msg, 'HIGH', true);
       }

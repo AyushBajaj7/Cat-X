@@ -69,5 +69,5 @@ def resolve_attention_mode(
     # Default: Nominal Operation
     return (
         "NORMAL",
-        "Operations proceeding within nominal tolerances. Target cadence maintained."
+        "Operations proceeding within nominal tolerances. Target production pace maintained."
     )

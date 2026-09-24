@@ -171,10 +171,10 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({
                     {isSafetyFocus
                       ? safety?.seatbelt_fastened === false
                         ? 'Fasten cab harness buckle immediately to re-enable implement controls.'
-                        : 'Service vehicle / personnel inside 15m counterweight swing zone. Halt boom slew.'
+                        : 'Service vehicle / personnel inside 15m counterweight swing zone. Stop your swing immediately.'
                       : isDecisionFocus
                       ? 'Haul trucks queued at primary crusher + incoming rain front. Resequencing to Bench 3 saves 17 minutes and 14.8L fuel.'
-                      : 'Hydraulics armed • Seatbelt 100% compliant • Swing perimeter 15m clear • Pace 104.5% on target.'}
+                      : `Hydraulics armed • Seatbelt 100% compliant • Swing perimeter 15m clear • Digging speed: ${twin?.productivity?.pace_percentage ?? 104.5}% of planned (${(twin?.productivity?.pace_percentage ?? 104.5) >= 100 ? '+' : ''}${Math.round((twin?.productivity?.pace_percentage ?? 104.5) - 100)}% ahead).`}
                   </p>
                 </div>
               </div>
@@ -264,8 +264,14 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({
                 {isDecisionFocus ? 'TRUCKS DELAYED (17M)' : 'TRUCK 02 ON APPROACH'}
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                Pacing: <strong className="text-[#FFCD11]">104.5%</strong> • Shift Excavated:{' '}
-                <strong className="text-white">320 / 850 t</strong>
+                Digging Speed:{' '}
+                <strong className="text-[#FFCD11]">
+                  {(twin?.productivity?.pace_percentage ?? 104.5) >= 100 ? `+${Math.round((twin?.productivity?.pace_percentage ?? 104.5) - 100)}% Ahead` : `${Math.round((twin?.productivity?.pace_percentage ?? 104.5) - 100)}% Behind`}
+                </strong>{' '}
+                <span className="text-gray-500">({twin?.productivity?.pace_percentage ?? 104.5}% of plan)</span> • Shift Target:{' '}
+                <strong className="text-white">
+                  {twin?.productivity?.completed_volume_tons ?? 320} / {twin?.productivity?.target_volume_tons ?? 850} t ({Math.round(((twin?.productivity?.completed_volume_tons ?? 320) / (twin?.productivity?.target_volume_tons ?? 850)) * 100)}%)
+                </strong>
               </div>
             </div>
           </div>
@@ -400,9 +406,12 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({
               </div>
             </div>
             <div className="text-center px-3 py-1 border-l border-[#262626]">
-              <span className="text-[10px] uppercase font-bold text-gray-400">Pace vs Target</span>
+              <span className="text-[10px] uppercase font-bold text-gray-400">Digging Speed</span>
               <div className="text-xl font-black text-sky-400 mt-0.5">
-                {twin?.productivity.pace_percentage ?? 104.5}%
+                {(twin?.productivity.pace_percentage ?? 104.5) >= 100 ? `+${Math.round((twin?.productivity.pace_percentage ?? 104.5) - 100)}%` : `${Math.round((twin?.productivity.pace_percentage ?? 104.5) - 100)}%`}
+              </div>
+              <div className="text-[10px] text-gray-400 font-medium">
+                {(twin?.productivity.pace_percentage ?? 104.5) >= 100 ? 'Ahead of Target' : 'Behind Target'} ({twin?.productivity.pace_percentage ?? 104.5}%)
               </div>
             </div>
           </div>

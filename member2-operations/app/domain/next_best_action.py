@@ -96,8 +96,8 @@ def generate_next_best_actions(
     if not actions:
         actions.append(NextBestActionModel(
             action_id="NBA-NOM-01",
-            title="Maintain Digging Cadence",
-            rationale="Current bucket cycle and slew cadence are within optimal production envelope.",
+            title="Maintain Production Pace",
+            rationale="Current bucket cycle and swing speed are within optimal production envelope.",
             category="EFFICIENCY",
             priority="NORMAL",
             estimated_benefit="Keeps current shift on schedule.",

@@ -128,7 +128,7 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ dashboard, demoS
             <span>Prediction & Productivity Trends</span>
           </h4>
           <p className="text-gray-400">
-            Trench excavation rate is running at 104.5% of scheduled pace. Haul fleet cycle spacing is the primary operational variance factor.
+            Trench excavation rate is running at {twin?.productivity?.pace_percentage ?? 104.5}% of scheduled pace ({(twin?.productivity?.pace_percentage ?? 104.5) >= 100 ? `+${Math.round((twin?.productivity?.pace_percentage ?? 104.5) - 100)}% ahead` : `${Math.round((twin?.productivity?.pace_percentage ?? 104.5) - 100)}% behind`}). Haul fleet cycle spacing is the primary operational variance factor.
           </p>
           <div className="bg-[#121212] p-3 rounded-lg border border-[#242424] space-y-1.5 font-mono">
             <div className="flex justify-between">

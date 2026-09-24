@@ -52,7 +52,7 @@ class SimilarContextService:
             if queue >= 3:
                 takeaways.append(f"Handled {queue}-truck bottleneck with re-sequenced overburden cut.")
             else:
-                takeaways.append("Maintained continuous direct truck loading at optimal cadence.")
+                takeaways.append("Maintained continuous direct truck loading at optimal production pace.")
 
             if str(m.get("weather", "CLEAR")).upper() in ["RAIN", "MUD"]:
                 takeaways.append("Compensated for grade traction slip by keeping bench grade at 1:1.")

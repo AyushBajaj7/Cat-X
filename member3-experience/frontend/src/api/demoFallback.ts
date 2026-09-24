@@ -214,8 +214,8 @@ const STEP_DEFINITIONS: Record<number, any> = {
     decision_point_active: false,
     top_action: {
       action_id: 'NBA-01',
-      title: 'Maintain Current Dig Cadence',
-      rationale: 'Pace is 4.5% above baseline. Trench grade on schedule.',
+      title: 'Maintain Production Pace',
+      rationale: 'Digging speed is 4.5% above baseline. Trench grade on schedule.',
       estimated_benefit: 'On schedule for 14:00 shift handoff',
       priority: 'NORMAL',
     },

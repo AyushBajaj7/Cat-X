@@ -581,10 +581,10 @@ async def process_voice_command(payload: Dict[str, Any]):
             spoken_response = "Critical Safety Alert: Seatbelt harness is unbuckled. Hydraulic circuits are locked out. Fasten your harness to resume digging."
             priority = "CRITICAL"
         elif safety.get("active_hazard_count", 0) > 0:
-            spoken_response = f"Proximity Warning: Service vehicle detected at 11 meters inside your 15-meter counterweight swing zone. Halt boom slew immediately."
-            priority = "HIGH"
+            spoken_response = "Proximity Warning: Support vehicle detected at 11 meters inside your 15-meter counterweight swing zone. Stop your swing immediately."
+            priority = "CRITICAL"
         else:
-            spoken_response = "Cab safety perimeter is 100% clear. Zero proximity hazards. Harness latched. Highwall geotechnical slope is stable at 8 degrees, well under the 15 degree safety limit."
+            spoken_response = "Cab safety perimeter is 100% clear. Zero proximity hazards. Harness latched. Bench slope is stable at 8 degrees, well under the 15-degree safety limit."
 
     elif any(k in q for k in ["pace", "ton", "target", "progress", "how much", "speed"]):
         intent = "QUERY_PACE_TONNAGE"
@@ -592,31 +592,40 @@ async def process_voice_command(payload: Dict[str, Any]):
         pace = prod.get("pace_percentage", 104.5)
         vol = prod.get("completed_volume_tons", 320)
         target = prod.get("target_volume_tons", 850)
-        spoken_response = f"Current digging cadence is {pace}% of target. You have excavated {vol} of {target} tons. Operating pace is optimal."
+        progress_pct = round((vol / target) * 100) if target else 0
+        delta_pct = round(pace - 100)
+        speed_text = f"{delta_pct}% ahead of schedule" if delta_pct >= 0 else f"{abs(delta_pct)}% behind schedule"
+        spoken_response = f"You've loaded {vol} of your {target}-ton shift target ({progress_pct}% complete). Digging speed is {speed_text}, running at {pace}% of planned rate."
 
     elif any(k in q for k in ["what should i do", "recommend", "what to do", "action", "delay", "options", "trajectory"]):
         intent = "QUERY_RECOMMENDATION"
         if is_decision_focus:
-            spoken_response = "Tactical Advisory: Crusher queue creates a 17-minute trap. Say 'Choose Bench 3' or tap the recovery button to resequence overburden stripping. This saves 17 minutes and 14.8 liters of idle fuel."
+            spoken_response = "Tactical Advisory: Crusher queue creates a 17-minute delay before rain arrives. Say 'Choose Bench 3' or tap the recovery button to resequence overburden. This saves 17 minutes and 14.8 liters of idle fuel."
             priority = "HIGH"
         elif is_safety_fault:
             spoken_response = "Immediate safety action required: Fasten your cab harness and clear the 15-meter swing zone to restore hydraulic power."
             priority = "CRITICAL"
         else:
-            spoken_response = "No intervention needed. Maintain current 104.5% trenching cadence. Shift handoff on schedule at 145 minutes remaining."
+            prod = twin.get("productivity", {})
+            pace = prod.get("pace_percentage", 104.5)
+            delta_pct = round(pace - 100)
+            speed_text = f"{delta_pct}% ahead of schedule" if delta_pct >= 0 else f"{abs(delta_pct)}% behind schedule"
+            rem = twin.get("prediction", {}).get("estimated_remaining_minutes", 145)
+            spoken_response = f"No intervention needed. Maintain current digging speed, currently {speed_text}. Shift handoff on schedule at {rem} minutes remaining."
 
     elif any(k in q for k in ["choose bench 3", "select bench 3", "resequence", "commit"]):
         intent = "EXECUTE_TRAJECTORY_CHOICE"
         demo_engine.record_choice("SCEN-02-RESEQUENCE", "Voice command committed optimal recovery trajectory.")
         action_taken = "COMMITTED_SCEN_02_RESEQUENCE"
-        spoken_response = "Affirmative. Committed Bench 3 recovery sequence. Dispatch routing updated. Haul queue bypassed and 14.8 liters of fuel saved. Resuming nominal digging."
+        spoken_response = "Affirmative. Committed Bench 3 recovery sequence. Dispatch routing updated. Haul queue bypassed and 14.8 liters of fuel saved. Resuming standard digging."
+        priority = "HIGH"
 
     elif any(k in q for k in ["weather", "rain", "saturation"]):
         intent = "QUERY_WEATHER"
         spoken_response = "Weather radar reports incoming overcast and rain front arriving in approximately 20 minutes. Ground saturation will rise from 12% to 28% if bench trenching is delayed."
 
     else:
-        spoken_response = f"Voice command acknowledged: '{query_text}'. As your in-cab companion, ask me: 'Where are the trucks?', 'What should I do?', 'Check safety status', or say 'Choose Bench 3'."
+        spoken_response = f"Voice command acknowledged: '{query_text}'. As your in-cab companion, ask me: 'Where are the trucks?', 'What should I do?', 'Check safety perimeter', 'What is my target pace?', or say 'Choose Bench 3 path'."
 
     return {
         "command_id": f"CMD-{int(datetime.now().timestamp() * 1000)}",
