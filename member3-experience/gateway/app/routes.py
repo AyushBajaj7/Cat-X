@@ -462,7 +462,9 @@ async def get_decision_memory(operator_id: str):
         try:
             resp = await client.get(f"{settings.operations_service_url}/api/v1/trajectory/memory/{operator_id}")
             if resp.status_code == 200:
-                return resp.json()
+                data = resp.json()
+                if data:  # Only use upstream if non-empty
+                    return data
         except Exception:
             pass
     return [
