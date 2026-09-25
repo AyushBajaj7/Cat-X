@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Shield,
@@ -30,6 +30,20 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
   machineId = 'EXC-CAT-349D',
 }) => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, []);
 
   const getAttentionBadge = (mode: AttentionMode) => {
     switch (mode) {
@@ -147,7 +161,10 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
 
         {/* Navigation Bar - Single-line horizontal scroll on small screens, flex-spaced on larger screens */}
         <div className="border-t border-[#242424] bg-[#1A1A1A] px-2 sm:px-4 py-1.5">
-          <nav className="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs xl:justify-between">
+          <nav
+            ref={navRef}
+            className="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs xl:justify-between scroll-smooth"
+          >
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
