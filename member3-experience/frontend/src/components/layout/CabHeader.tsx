@@ -106,11 +106,11 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
                   Cab Companion
                 </span>
               </div>
-              <div className="flex items-center space-x-3 text-xs text-gray-400 mt-0.5 flex-wrap">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-gray-400 mt-0.5">
                 <span>Op: <strong className="text-white font-mono">{operatorId} (J. Miller)</strong></span>
                 <span>•</span>
                 <span>Cab Unit: <strong className="text-[#FFCD11] font-mono">{machineId}</strong> <span className="text-[10px] text-gray-400">(Single Machine)</span></span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span className="hidden sm:inline text-gray-400">
                   <Truck className="w-3 h-3 inline mr-1 text-sky-400" />
                   Fleet Radar: 4 Trucks active
@@ -125,7 +125,7 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
           </div>
 
           {/* Right: Adaptive Attention Mode Indicator & Guide button */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between sm:justify-end gap-2 w-full md:w-auto">
             <button
               type="button"
               onClick={() => setIsGuideOpen(true)}
@@ -145,16 +145,16 @@ export const CabHeader: React.FC<CabHeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation Bar - Responsive & Compact so all 9 buttons fit cleanly */}
-        <div className="border-t border-[#242424] bg-[#1A1A1A] px-3 sm:px-4 py-1.5">
-          <nav className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-1 text-xs">
+        {/* Navigation Bar - Single-line horizontal scroll on small screens, flex-spaced on larger screens */}
+        <div className="border-t border-[#242424] bg-[#1A1A1A] px-2 sm:px-4 py-1.5">
+          <nav className="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs xl:justify-between">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 title={item.title}
                 className={({ isActive }: { isActive: boolean }) =>
-                  `flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap text-xs ${
+                  `flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap text-xs shrink-0 ${
                     isActive
                       ? 'bg-[#FFCD11] text-[#111111] shadow-md font-black'
                       : item.highlight

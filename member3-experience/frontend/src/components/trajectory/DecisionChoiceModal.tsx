@@ -41,7 +41,7 @@ export const DecisionChoiceModal: React.FC<DecisionChoiceModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#1C1C1C] border border-[#3E3E3E] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+      <div className="bg-[#1C1C1C] border border-[#3E3E3E] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 shadow-2xl relative space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#2C2C2C] pb-3">
           <div className="flex items-center space-x-2.5">

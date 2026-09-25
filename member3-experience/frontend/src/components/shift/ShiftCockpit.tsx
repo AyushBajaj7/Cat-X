@@ -61,37 +61,39 @@ export const ShiftCockpit: React.FC<ShiftCockpitProps> = ({
   return (
     <div className="space-y-6">
       {/* Cockpit Mode Switcher Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#1B1B1B] border border-[#2E2E2E] p-2.5 rounded-xl shadow-md">
-        <div className="flex items-center space-x-2.5">
-          <span className="text-[11px] font-black text-[#FFCD11] uppercase tracking-wider">In-Cab Mode:</span>
-          <div className="flex items-center p-1 bg-black/60 rounded-lg border border-[#333333]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-[#1B1B1B] border border-[#2E2E2E] p-2.5 rounded-xl shadow-md">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <span className="text-[11px] font-black text-[#FFCD11] uppercase tracking-wider shrink-0">In-Cab Mode:</span>
+          <div className="flex items-center p-1 bg-black/60 rounded-lg border border-[#333333] flex-1 sm:flex-initial">
             <button
               type="button"
               onClick={() => setViewMode('CAB_HUD')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-black transition cursor-pointer ${
+              className={`flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-black transition cursor-pointer flex-1 sm:flex-initial ${
                 viewMode === 'CAB_HUD'
                   ? 'bg-[#FFCD11] text-black shadow-md'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>CAB HUD (Hands-Free Active Digging)</span>
+              <Eye className="w-3.5 h-3.5 shrink-0" />
+              <span className="sm:hidden">CAB HUD</span>
+              <span className="hidden sm:inline">CAB HUD (Hands-Free Active Digging)</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('DETAILED')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-black transition cursor-pointer ${
+              className={`flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-black transition cursor-pointer flex-1 sm:flex-initial ${
                 viewMode === 'DETAILED'
                   ? 'bg-[#FFCD11] text-black shadow-md'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>DETAILED AUDIT (Break & Pre-Shift)</span>
+              <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+              <span className="sm:hidden">DETAILED</span>
+              <span className="hidden sm:inline">DETAILED AUDIT (Break & Pre-Shift)</span>
             </button>
           </div>
         </div>
-        <div className="text-[11px] text-gray-400 flex items-center space-x-1.5">
+        <div className="text-[10px] sm:text-[11px] text-gray-400 flex items-center space-x-1.5 justify-center sm:justify-start">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1"></span>
           <span>Zero screen interaction required while operating joysticks</span>
         </div>

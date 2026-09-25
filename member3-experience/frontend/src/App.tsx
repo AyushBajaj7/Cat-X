@@ -211,7 +211,7 @@ export const App: React.FC = () => {
         />
 
         {/* Main Routed Content Area */}
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
+        <main className="flex-1 px-3 py-4 sm:px-6 sm:py-6 max-w-7xl mx-auto w-full">
           <Routes>
             <Route
               path="/"

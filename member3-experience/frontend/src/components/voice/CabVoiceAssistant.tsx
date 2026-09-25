@@ -548,7 +548,7 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
         </div>
 
         {/* Voice Toggles & Mic Trigger */}
-        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Stop Audio Button (Visible when speaking or anytime) */}
           {isSpeaking && (
             <button
@@ -747,9 +747,9 @@ export const CabVoiceAssistant: React.FC<CabVoiceAssistantProps> = ({
 
       {/* Quick 1-Touch Voice Queries (For high background cab noise) */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-          <span>Hands-Free Quick Queries (1-Touch Voice Prompts):</span>
-          <span className="text-gray-500 font-normal">Click to simulate speaking command</span>
+        <div className="flex items-center justify-between text-[11px] text-gray-400 font-bold uppercase tracking-wider flex-wrap gap-1">
+          <span>Hands-Free Quick Queries:</span>
+          <span className="text-gray-500 font-normal text-[10px]">Simulate voice command</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {quickPrompts.map((p, idx) => (

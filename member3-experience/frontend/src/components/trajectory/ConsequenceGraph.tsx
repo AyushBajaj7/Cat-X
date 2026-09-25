@@ -60,7 +60,7 @@ export const ConsequenceGraph: React.FC<ConsequenceGraphProps> = ({ graph }) => 
               <React.Fragment key={node.node_id}>
                 {/* Graph Node */}
                 <div
-                  className={`flex-1 min-w-[200px] max-w-[260px] p-3.5 rounded-xl border shadow-sm transition hover:scale-[1.02] ${getNodeColor(
+                  className={`flex-1 w-full lg:w-auto lg:min-w-[200px] lg:max-w-[260px] p-3.5 rounded-xl border shadow-sm transition hover:scale-[1.02] ${getNodeColor(
                     node
                   )}`}
                 >

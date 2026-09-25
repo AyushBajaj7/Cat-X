@@ -52,7 +52,7 @@ export const MachineScreen: React.FC<MachineScreenProps> = ({ demoState }) => {
             </div>
             <h3 className="text-2xl sm:text-3xl font-black text-white mt-1 font-mono">{machineId}</h3>
           </div>
-          <div className="bg-[#121212] px-4 py-2 rounded-xl border border-[#333333] text-right">
+          <div className="bg-[#121212] px-4 py-2 rounded-xl border border-[#333333] text-left sm:text-right">
             <span className="text-[10px] text-gray-400 uppercase font-bold">Active Machine State</span>
             <div className="text-sm font-black text-[#FFCD11] mt-0.5 font-mono">{machineState}</div>
           </div>

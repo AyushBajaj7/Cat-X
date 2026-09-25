@@ -158,7 +158,7 @@ export const SafetyScreen: React.FC<SafetyScreenProps> = ({ safety, alerts, beha
             {alerts.map((al) => (
               <div
                 key={al.alert_id}
-                className={`p-4 rounded-xl border flex items-center justify-between gap-3 text-xs ${
+                className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
                   al.severity === 'CRITICAL'
                     ? 'bg-rose-950/80 border-rose-600 text-rose-200'
                     : 'bg-amber-950/80 border-amber-600 text-amber-200'
