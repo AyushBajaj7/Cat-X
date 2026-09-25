@@ -2,7 +2,8 @@
 
 **Owner**: Engineer 3 (Senior Product, Frontend, Training & Integration Engineer)  
 **Ports**: Frontend (`5173`), API Gateway (`8080`), Training Service (`8003`), Operations (`8002`), Safety (`8001`), Postgres (`5432`)  
-**Monorepo Boundary**: `member3-experience/` (Frontend, Gateway, Training), `integration/` (E2E Tests), and root `docker-compose.yml`.
+**Monorepo Boundary**: `member3-experience/` (Frontend, Gateway, Training), `integration/` (E2E Tests), and root `docker-compose.yml`.  
+**Live Production Deployment**: [https://cat-frontend-su80.onrender.com/shift](https://cat-frontend-su80.onrender.com/shift)
 
 ---
 
@@ -90,9 +91,14 @@ Cat-X/
   - `CAB HUD`: Hands-free high-visibility view for active digging. Only 3 glanceable indicators (Perimeter, Harness, Fleet Cycle).
   - `DETAILED AUDIT`: Comprehensive technical telemetry for shift handoffs and supervisor reviews.
 - **Joystick Push-to-Talk (PTT)**: Hold `Spacebar` (or joystick trigger) to speak, eliminating false alarms from 85 dBA engine noise.
+- **Tactile Stop & Replay Controls**: Prominent `[■ Stop Audio]` button and keyboard `Escape` shortcut to halt speech immediately; `[⟲ Replay]` to repeat the last transmission without distraction.
+- **Preemptive Audio Priority System**: Immediate interruption for Level 3 (`CRITICAL`) safety alerts; Level 2 (`HIGH`) tactical advisories; Level 1 (`NORMAL`) standard dispatch.
+- **Disambiguated Telemetry Math**: Explicitly separates Quota Progress (`500 / 850 t (59%)`) from Digging Speed (`+18% Ahead, 118% of planned rate`).
+- **Authentic Radio Terminology**: Replaced robotic jargon with authentic Caterpillar/mining radio dispatch phrasing.
 - **Pure Web Audio Synthesizer**: Oscillator-generated radio squelches and mic-open chirps (`PTT_ON`, `PTT_OFF`, `ALERT`, `CONFIRM`) with zero asset download overhead.
-- **Natural Radio Voice**: Warm, measured authoritative voice (rate 1.03, pitch 0.95) with natural presence and emotional depth.
+- **Natural Warm Voice**: Warm, measured authoritative voice (rate 1.03, pitch 0.95) with natural presence and emotional depth.
 - **V2V Fleet Telemetry**: Tracks the single cab machine (`EXC-CAT-349D`) and 4 haul fleet cycle trucks, providing early bottleneck warnings before delays occur.
+- **High-Density Responsive Navigation**: Compact tabs with tooltips and `flex-wrap` protection, ensuring zero cut-off buttons or horizontal scrollbars across all screen widths.
 
 ---
 

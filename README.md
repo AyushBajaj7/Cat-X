@@ -2,6 +2,10 @@
 
 > **An Intelligent In-Cab Companion & Consequence Engine for Heavy Equipment Operators**  
 > *Developed for the Caterpillar Hackathon 2026*
+>
+> 🌐 **Live Production Deployment**: [https://cat-frontend-su80.onrender.com](https://cat-frontend-su80.onrender.com)  
+> 🚀 **Direct Shift Cockpit View**: [https://cat-frontend-su80.onrender.com/shift](https://cat-frontend-su80.onrender.com/shift)  
+> 📦 **GitHub Repository**: [https://github.com/AyushBajaj7/Cat-X](https://github.com/AyushBajaj7/Cat-X)
 
 ---
 
@@ -255,14 +259,27 @@ Operating a 50-ton excavator with two joysticks while interacting with a complex
 2. **Physical Push-to-Talk (PTT) Joystick Integration**:
    - Eliminates false wake-word activations in 85 dBA C13 engine noise.
    - Hold the `Spacebar` (or physical joystick trigger) to transmit; release to receive.
-3. **100% Offline Pure Web Audio Synthesizer**:
+3. **Tactile Stop & Replay Audio Controls**:
+   - Prominent red `[■ Stop Audio]` button and keyboard `Escape` shortcut instantly halt speech playback at any time.
+   - `[⟲ Replay]` button allows the operator to repeat the last broadcast without taking their eyes off the bench for long.
+   - Interruption Guardrail: Asking a new question immediately cuts off previous speech without audio overlap or race conditions.
+4. **Preemptive Audio Priority System**:
+   - **Level 3 (`CRITICAL`)**: Safety harness interlock disengagement or counterweight proximity breaches sound an alarm horn and immediately preempt any active broadcast.
+   - **Level 2 (`HIGH`)**: Tactical advisories (e.g. 17-minute trap, crusher bunching, rain onset).
+   - **Level 1 (`NORMAL`)**: Standard fleet queries, shift progress, and pacing status.
+   - Visual priority beacon in the console header displays active dispatch priority level in real time.
+5. **Crystal-Clear Disambiguated Telemetry Math**:
+   - **Shift Quota Progress**: `500 of 850 tons (59% complete)`.
+   - **Instantaneous Digging Speed**: `18% ahead of schedule, running at 118% of planned rate`.
+   - Clearly separates shift quota tonnage from instantaneous loading rate, eliminating contradictory percentages.
+6. **Authentic Radio Dispatch Terminology**:
+   - Replaced unnatural robotic jargon with authentic Caterpillar and mining dispatch terminology (*"digging speed"*, *"bench slope"*, *"stop swing immediately"*).
+7. **100% Offline Pure Web Audio Synthesizer**:
    - Pure oscillator-generated radio squelches and mic-open chirps (`PTT_ON`, `PTT_OFF`, `ALERT`, `CONFIRM`) that require zero downloaded audio files and function in deep open pits with zero connectivity.
-4. **Natural Radio Dispatch Voice**:
+8. **Natural Warm Radio Dispatch Voice**:
    - Calibrated speech synthesis tuned with a warm, measured, authoritative radio tone (1.03 rate, 0.95 pitch) for natural presence and emotional depth over cab acoustic noise.
-5. **V2V (Vehicle-to-Vehicle) Collaborative Fleet Intelligence**:
-   - Excavator single-machine focus (`EXC-CAT-349D`) backed by real-time telemetry mesh across 4 active haul trucks, propagating crusher delays and cycle ETAs before the operator even looks at the screen.
-6. **Tactile 1-Touch Fallback Chips**:
-   - High-visibility glove-friendly buttons for noisy hydraulic breaker hammering conditions.
+9. **Responsive High-Density Cockpit Navigation**:
+   - Compact tabs with hover tooltips, `flex-wrap` protection, and scrollbar elimination ensure all 9 primary navigation tabs and the 10-step time-lapse controller remain 100% visible on any cab monitor (1024px to 4K).
 
 ---
 
@@ -272,11 +289,11 @@ To evaluate and demonstrate real shift scenarios without waiting 8 hours for pit
 
 | Step | Name | Operational Context | System Response |
 | :---: | :--- | :--- | :--- |
-| **1** | Normal | Nominal digging baseline on Bench 2 | Pace 104.5%, 0 hazards, green indicators |
+| **1** | Normal | Nominal digging baseline on Bench 2 | Digging speed 104.5% of target, 0 hazards, green indicators |
 | **2** | Seatbelt | Harness unbuckled during cycle pause | Hydraulic lockout armed, audio buzzer |
-| **3** | Proximity | Vehicle enters 11m swing radius | Proximity alert: *"Halt boom slew"* |
+| **3** | Proximity | Vehicle enters 11m swing radius | Proximity alert: *"Stop swing immediately"* |
 | **4** | High Idle | Waiting for trucks; idle hits 18.5% | Fuel waste alert; idle reduction guidance |
-| **5** | Decision Point | Crusher queue blocks 4 trucks; rain in 20 min | Decision advisory: 17-min trap warning |
+| **5** | Decision Point | Crusher queue blocks 4 trucks; rain in 20 min | Tactical advisory: 17-min trap warning |
 | **6** | Trajectories | Consequence engine computes 4 scenarios | Feasibility filtering & multi-order DAG |
 | **7** | Human Choice | Operator selects Bench 3 resequencing | Operator retains full command authority |
 | **8** | Outcome Replay | Simulates result against active twin | 15.8 min saved, 14.8L fuel saved |
@@ -296,12 +313,19 @@ To evaluate and demonstrate real shift scenarios without waiting 8 hours for pit
 
 ---
 
-## 10. Verification & Test Coverage
+## 10. Live Deployment & Verification
+
+### 🌐 Live Production Deployment
+- **Frontend Dashboard (Render)**: [https://cat-frontend-su80.onrender.com](https://cat-frontend-su80.onrender.com)
+- **Direct Shift Cockpit View**: [https://cat-frontend-su80.onrender.com/shift](https://cat-frontend-su80.onrender.com/shift)
+- **Automated Fallback Engine**: If backend microservices are cold-starting on free-tier hosting, the frontend seamlessly activates resilient client-side state models (`demoFallback.ts`) guaranteeing 100% operational uptime.
+
+### 🧪 Automated Test Coverage
 
 Every service and user-facing capability is validated with comprehensive automated test suites:
 
 ```bash
-# 1. Run all 84 Python unit & integration tests (100% Passing)
+# 1. Run all Python unit & integration tests (100% Passing)
 python -m pytest member1-safety member2-operations member3-experience -v
 
 # 2. Run TypeScript build check (0 Errors)
@@ -314,7 +338,7 @@ node scratch/test_all_routes_and_links.mjs
 docker-compose up --build
 ```
 
-* Verified 84/84 Python backend tests across Safety, Operations, Gateway, and Training.
+* Verified all 71 Python backend tests across Safety, Operations, Gateway, and Training.
 * Verified all 9 primary React routes, modals, and navigation buttons via headless Playwright automation.
-* Verified Web Audio squelch synthesizer and SpeechSynthesis dispatch audio.
+* Verified Web Audio squelch synthesizer, voice priority preemption, and SpeechSynthesis dispatch audio.
 
