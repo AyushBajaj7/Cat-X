@@ -346,14 +346,14 @@ export const TrainingScenarioPlayer: React.FC = () => {
               <button
                 onClick={handleSubmitStep}
                 disabled={!selectedChoiceId}
-                className="px-6 py-2.5 rounded-xl bg-[#FFCD11] hover:bg-[#E0A800] text-[#111111] text-xs font-black uppercase tracking-wider disabled:opacity-40 transition shadow"
+                className="w-full sm:w-auto justify-center px-6 py-2.5 rounded-xl bg-[#FFCD11] hover:bg-[#E0A800] text-[#111111] text-xs font-black uppercase tracking-wider disabled:opacity-40 transition shadow flex items-center"
               >
                 Confirm Decision
               </button>
             ) : (
               <button
                 onClick={handleNextStep}
-                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-[#FFCD11] hover:bg-[#E0A800] text-[#111111] text-xs font-black uppercase tracking-wider transition shadow"
+                className="w-full sm:w-auto justify-center flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-[#FFCD11] hover:bg-[#E0A800] text-[#111111] text-xs font-black uppercase tracking-wider transition shadow"
               >
                 <span>{currentStepIndex < steps.length - 1 ? 'Next Step' : 'Review Results'}</span>
                 <ArrowRight className="w-4 h-4" />
